@@ -28,22 +28,25 @@ Open [http://localhost:3000](http://localhost:3000) on this machine.
 
 ## Share with others (GitHub Pages only)
 
-The site is deployed automatically by GitHub Actions whenever you push to `main`.
+The site is built as static files and published to a `gh-pages` branch by GitHub Actions.
 
-### One-time setup in GitHub
+### Fix the 404 (one-time setup)
 
-1. Open your repo: [ivanlin0402/personal-website](https://github.com/ivanlin0402/personal-website)
-2. Go to **Settings → Pages**
-3. Under **Build and deployment → Source**, choose **GitHub Actions**
-4. Push these changes to `main` (or run the **Deploy to GitHub Pages** workflow manually under the **Actions** tab)
-5. After the workflow finishes (1–2 minutes), open:  
-   **https://ivanlin0402.github.io/personal-website/**
+The 404 means Pages is not publishing yet. Do this:
 
-Anyone can use that link — it does not depend on your computer being on.
+1. Open **[Settings → Pages](https://github.com/ivanlin0402/personal-website/settings/pages)**
+2. Under **Build and deployment → Source**, choose **Deploy from a branch**
+3. Branch: **`gh-pages`** / folder: **`/ (root)`** → click **Save**
+4. Open the **[Actions](https://github.com/ivanlin0402/personal-website/actions)** tab
+5. Open **Deploy to GitHub Pages** → **Run workflow** (or push a new commit to `main`)
+6. Wait until the workflow is green
+7. Open: **https://ivanlin0402.github.io/personal-website/**
 
-### Important limitation
+It can take 1–2 minutes after a green deploy before the link works.
 
-GitHub Pages can only host **static** websites (HTML/CSS/JS). There is no Node.js server, so API routes are not used. The visitor counter only works if you configure Supabase (optional).
+### After it works
+
+Anyone can use that `github.io` link. It does not need your computer to be on.
 
 ## Adding a project
 
