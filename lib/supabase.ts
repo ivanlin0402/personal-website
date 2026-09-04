@@ -1,13 +1,15 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 /**
- * Server-side Supabase client for the visitor counter.
+ * Browser-safe Supabase client (anon key only).
  *
- * Required environment variables (place in `.env.local`):
- * - NEXT_PUBLIC_SUPABASE_URL      → your project URL (Settings → API)
- * - NEXT_PUBLIC_SUPABASE_ANON_KEY → your anon/public key (Settings → API)
+ * Env vars (`.env.local` locally, or GitHub Actions secrets for Pages):
+ * - NEXT_PUBLIC_SUPABASE_URL
+ * - NEXT_PUBLIC_SUPABASE_ANON_KEY
+ *
+ * Optional on GitHub Pages — without them the visitor count is hidden.
  */
-export function getSupabaseAdmin(): SupabaseClient | null {
+export function getSupabaseBrowser(): SupabaseClient | null {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 

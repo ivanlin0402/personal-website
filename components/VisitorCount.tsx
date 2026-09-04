@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getSupabaseBrowser } from "@/lib/supabase";
 
 const STORAGE_KEY = "site_visitor_id";
 
@@ -32,7 +33,9 @@ function formatCount(count: number): string {
 }
 
 /**
- * Unique-visitor count shown in the footer as: · 1,284 visits
+ * Unique-visitor count for the footer.
+ * Calls Supabase directly from the browser (works on static GitHub Pages).
+ * Hides itself if Supabase is not configured or the request fails.
  */
 export function VisitorCount() {
   const [count, setCount] = useState<number | null>(null);
@@ -42,22 +45,19 @@ export function VisitorCount() {
 
     async function register() {
       try {
+        const supabase = getSupabaseBrowser();
+        if (!supabase) return;
+
         const visitorId = getOrCreateVisitorId();
-        const response = await fetch("/api/visits", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ visitorId }),
+        const { data, error } = await supabase.rpc("register_visit", {
+          p_visitor_id: visitorId,
         });
 
-        if (!response.ok || response.status === 204) return;
+        if (error || data === null || data === undefined) return;
 
-        const data = (await response.json()) as { count?: number };
-        if (
-          !cancelled &&
-          typeof data.count === "number" &&
-          Number.isFinite(data.count)
-        ) {
-          setCount(data.count);
+        const next = typeof data === "number" ? data : Number(data);
+        if (!cancelled && Number.isFinite(next) && next >= 0) {
+          setCount(next);
         }
       } catch {
         // Fail silently
