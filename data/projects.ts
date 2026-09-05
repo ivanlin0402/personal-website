@@ -13,30 +13,53 @@ export const projects: Project[] = [
     tags: ["Hardware", "Community", "Donation"],
     overview:
       "This project brings together hardware assembly and community support. The idea is to source or reuse components, build reliable PCs, and place them where they can make a practical difference.",
-    motivation:
-      "Access to a working computer still unlocks learning, communication, and opportunity for many people. I wanted a project that combines hands-on technical work with a clear real-world outcome.",
     goals: [
       "Define a reliable, affordable PC build for donation use cases",
       "Establish a repeatable assembly and testing checklist",
       "Identify partner organizations and donation workflows",
       "Document the process so others can follow or adapt it",
     ],
-    process:
-      "The current phase focuses on planning: researching component options, defining minimum specs, estimating costs, and outlining how donations will be coordinated. Assembly and delivery will follow once the plan is solid.",
-    timeline: [
-      { stage: "Idea", note: "Initial concept for community PC builds", date: "2025" },
-      { stage: "Planning", note: "Specs, partners, and workflow design", date: "2026" },
+    process: [
+      "Research component options and define minimum specs",
+      "Estimate costs and outline donation coordination",
+      "Assemble and test builds once the plan is solid",
+      "Deliver systems and document the workflow",
+    ],
+    technicalDetails: [
+      "Target a reliable mid-range component profile for donation use",
+      "Prefer parts that are easy to source, repair, and replace",
+      "Keep assembly and testing steps repeatable with a checklist",
+    ],
+    results: [
+      "Still in planning",
+      "Draft build profile started",
+      "Clearer understanding of donation logistics",
     ],
     lessons: [
       "Clear specs matter more than chasing maximum performance",
       "Donation logistics need as much planning as the build itself",
     ],
-    results:
-      "Still in planning. Early outcomes include a draft build profile and a clearer understanding of donation logistics.",
-    links: [
-      { label: "Documentation", href: "#" },
+    media: "Photos and diagrams will be added as builds progress.",
+    documentationUrl: "#",
+    updates: [
+      {
+        date: "2026-09-05",
+        title: "Started project planning",
+        status: "completed",
+      },
+      {
+        date: "2026-09-12",
+        title: "Researching components",
+        description:
+          "Comparing possible hardware configurations and costs.",
+        status: "current",
+      },
+      {
+        date: "2026-10",
+        title: "Build first prototype",
+        status: "upcoming",
+      },
     ],
-    mediaNote: "Photos and diagrams will be added as builds progress.",
   },
   {
     slug: "game-project",
@@ -49,30 +72,28 @@ export const projects: Project[] = [
     tags: ["Programming", "Games", "Experiments"],
     overview:
       "A growing set of interactive experiments focused on gameplay ideas, small systems, and learning through building. Some pieces may grow into larger projects; others are intentional prototypes.",
-    motivation:
-      "Games are a useful way to practice programming, design thinking, and iteration. I wanted a space to try ideas quickly without needing every experiment to become a finished product.",
     goals: [
       "Prototype small interactive mechanics",
       "Improve programming and design judgment through practice",
       "Document experiments so ideas are easy to revisit",
     ],
-    process:
-      "Work happens in short cycles: pick a mechanic or idea, implement a minimal version, playtest, note what worked, and decide whether to expand or archive it.",
-    timeline: [
-      { stage: "Idea", note: "Started collecting experiment ideas", date: "2025" },
-      { stage: "In Progress", note: "Building and iterating on prototypes", date: "2026" },
+    process: [
+      "Pick a mechanic or idea",
+      "Implement a minimal version",
+      "Playtest and note what worked",
+      "Decide whether to expand or archive it",
+    ],
+    results: [
+      "Active prototyping phase",
+      "Early experiments helping clarify which ideas are worth developing further",
     ],
     lessons: [
       "Small scopes make experimentation sustainable",
       "Writing down outcomes helps more than keeping everything in memory",
     ],
-    results:
-      "Active prototyping phase. Early experiments are helping clarify which ideas are worth developing further.",
-    links: [
-      { label: "GitHub", href: "https://github.com/ivanlin0402" },
-      { label: "Demo", href: "#" },
-    ],
-    mediaNote: "Screenshots and clips will be added as prototypes mature.",
+    media: "Screenshots and clips will be added as prototypes mature.",
+    githubUrl: "https://github.com/ivanlin0402",
+    demoUrl: "#",
   },
 ];
 

@@ -5,15 +5,13 @@ export type ProjectStatus =
   | "Testing"
   | "Completed";
 
-export type TimelineItem = {
-  stage: ProjectStatus;
-  note?: string;
-  date?: string;
-};
+export type UpdateStatus = "completed" | "current" | "upcoming";
 
-export type ProjectLink = {
-  label: string;
-  href: string;
+export type ProjectUpdate = {
+  date: string;
+  title: string;
+  description?: string;
+  status?: UpdateStatus;
 };
 
 export type Project = {
@@ -25,15 +23,20 @@ export type Project = {
   year?: string;
   featured?: boolean;
   tags?: string[];
+
   overview?: string;
-  motivation?: string;
   goals?: string[];
-  process?: string;
-  timeline?: TimelineItem[];
+  process?: string[];
+  technicalDetails?: string[];
+  results?: string[];
   lessons?: string[];
-  results?: string;
-  links?: ProjectLink[];
-  mediaNote?: string;
+  media?: string;
+
+  githubUrl?: string;
+  demoUrl?: string;
+  documentationUrl?: string;
+
+  updates?: ProjectUpdate[];
 };
 
 export type NavLink = {
