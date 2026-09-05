@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { GameItem } from "@/lib/types";
 
 type GameCatalogGridProps = {
@@ -7,7 +8,7 @@ type GameCatalogGridProps = {
 
 /**
  * Retrogames.cc-inspired catalog grid:
- * platform label on top, game title, optional blurb, full-tile click target.
+ * cover image (or title plate), platform label, game title, link out.
  */
 export function GameCatalogGrid({
   games,
@@ -30,14 +31,22 @@ export function GameCatalogGrid({
             rel="noopener noreferrer"
             className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-200 hover:-translate-y-0.5 hover:border-border-hover hover:bg-card-hover"
           >
-            {/* Visual plate — catalog “cover” area */}
-            <div className="relative flex aspect-[4/3] items-center justify-center border-b border-border bg-background-secondary">
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(79,140,255,0.08),transparent_65%)]" />
-              <div className="relative px-4 text-center">
-                <p className="font-heading text-2xl font-semibold tracking-tight text-foreground/90 transition-colors group-hover:text-accent">
-                  {game.title}
-                </p>
-              </div>
+            <div className="relative aspect-[4/3] overflow-hidden border-b border-border bg-background-secondary">
+              {game.image ? (
+                <Image
+                  src={game.image}
+                  alt={game.title}
+                  fill
+                  className="object-cover transition-transform duration-200 group-hover:scale-[1.02]"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center px-4 text-center">
+                  <p className="font-heading text-2xl font-semibold tracking-tight text-foreground/90">
+                    {game.title}
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="flex flex-1 flex-col p-4">

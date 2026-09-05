@@ -96,7 +96,6 @@ export const projects: Project[] = [
       "Small scopes make experimentation sustainable",
       "Writing down outcomes helps more than keeping everything in memory",
     ],
-    media: "Screenshots and clips will be added as prototypes mature.",
     games: [
       {
         title: "Pop Cat",
@@ -104,9 +103,9 @@ export const projects: Project[] = [
         description:
           "A simple clicker — click or press a key to pop the cat and raise your score.",
         href: "https://github.com/ivanlin0402/pop-cat",
+        image: "/games/pop-cat/popcat.png",
       },
     ],
-    githubUrl: "https://github.com/ivanlin0402/pop-cat",
     updates: [
       {
         date: "2026-09-05",

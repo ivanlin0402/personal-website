@@ -20,6 +20,8 @@ export type GameItem = {
   platform: string;
   description?: string;
   href: string;
+  /** Optional cover image path under /public (e.g. /games/pop-cat/popcat.png) */
+  image?: string;
 };
 
 export type Project = {
