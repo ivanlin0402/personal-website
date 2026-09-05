@@ -30,8 +30,11 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
   if (!project) notFound();
 
+  const isCatalog = Boolean(project.games && project.games.length > 0);
+  const containerClass = isCatalog ? "container-page" : "container-narrow";
+
   return (
-    <div className="container-narrow py-12 sm:py-16">
+    <div className={`${containerClass} py-12 sm:py-16`}>
       <Link
         href="/projects"
         className="mb-8 inline-flex text-[13px] text-dim transition-colors duration-200 hover:text-muted"

@@ -21,8 +21,15 @@ export default function HomePage() {
           I build things, explore technology, and document projects I&apos;m
           working on.
         </p>
-        <div className="animate-fade-in-delay-2 mt-6">
+        <div className="animate-fade-in-delay-2 mt-6 flex flex-wrap gap-3">
           <Button href="/projects">View Projects</Button>
+          <Button
+            href="https://github.com/ivanlin0402/pop-cat"
+            variant="secondary"
+            external
+          >
+            Pop Cat on GitHub
+          </Button>
         </div>
       </section>
 

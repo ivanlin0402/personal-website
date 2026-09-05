@@ -1,4 +1,5 @@
 import type { Project } from "@/lib/types";
+import { GameCatalogGrid } from "@/components/GameCatalogGrid";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { ProjectLinks } from "@/components/ProjectLinks";
 import {
@@ -14,7 +15,12 @@ type ProjectDetailProps = {
 
 /**
  * Reusable project detail template.
- * Every section is optional — empty fields are omitted entirely.
+ *
+ * Section order (docs-like, catalog-friendly):
+ * 1. Overview
+ * 2. Progress / Timeline
+ * 3. Games catalog grid (if `games` is set — retrogames.cc style)
+ * 4. Remaining optional sections
  */
 export function ProjectDetail({ project }: ProjectDetailProps) {
   const hasLinks =
@@ -33,6 +39,16 @@ export function ProjectDetail({ project }: ProjectDetailProps) {
           </ProjectSection>
         ) : null}
 
+        {project.updates && project.updates.length > 0 ? (
+          <ProjectSection title="Progress / Timeline">
+            <ProjectTimeline updates={project.updates} />
+          </ProjectSection>
+        ) : null}
+
+        {project.games && project.games.length > 0 ? (
+          <GameCatalogGrid games={project.games} heading="Games" />
+        ) : null}
+
         {project.goals && project.goals.length > 0 ? (
           <ProjectSection title="Goals">
             <ProjectList items={project.goals} />
@@ -48,12 +64,6 @@ export function ProjectDetail({ project }: ProjectDetailProps) {
         {project.technicalDetails && project.technicalDetails.length > 0 ? (
           <ProjectSection title="Technical Details">
             <ProjectList items={project.technicalDetails} />
-          </ProjectSection>
-        ) : null}
-
-        {project.updates && project.updates.length > 0 ? (
-          <ProjectSection title="Progress / Timeline">
-            <ProjectTimeline updates={project.updates} />
           </ProjectSection>
         ) : null}
 

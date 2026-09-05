@@ -97,6 +97,15 @@ export const projects: Project[] = [
       "Writing down outcomes helps more than keeping everything in memory",
     ],
     media: "Screenshots and clips will be added as prototypes mature.",
+    games: [
+      {
+        title: "Pop Cat",
+        platform: "Pygame",
+        description:
+          "A simple clicker — click or press a key to pop the cat and raise your score.",
+        href: "https://github.com/ivanlin0402/pop-cat",
+      },
+    ],
     githubUrl: "https://github.com/ivanlin0402/pop-cat",
     updates: [
       {

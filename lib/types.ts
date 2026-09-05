@@ -14,6 +14,14 @@ export type ProjectUpdate = {
   status?: UpdateStatus;
 };
 
+/** Individual game tile inside a game-collection project (catalog style). */
+export type GameItem = {
+  title: string;
+  platform: string;
+  description?: string;
+  href: string;
+};
+
 export type Project = {
   slug: string;
   title: string;
@@ -31,6 +39,9 @@ export type Project = {
   results?: string[];
   lessons?: string[];
   media?: string;
+
+  /** When present, page uses a retrogames-style catalog layout. */
+  games?: GameItem[];
 
   githubUrl?: string;
   demoUrl?: string;
