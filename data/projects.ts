@@ -69,9 +69,9 @@ export const projects: Project[] = [
     status: "In Progress",
     year: "2026",
     featured: true,
-    tags: ["Programming", "Games", "Experiments"],
+    tags: ["Programming", "Games", "Experiments", "Pygame"],
     overview:
-      "A growing set of interactive experiments focused on gameplay ideas, small systems, and learning through building. Some pieces may grow into larger projects; others are intentional prototypes.",
+      "A growing set of interactive experiments focused on gameplay ideas, small systems, and learning through building. The first published piece is Pop Cat, a simple pygame clicker.",
     goals: [
       "Prototype small interactive mechanics",
       "Improve programming and design judgment through practice",
@@ -83,17 +83,34 @@ export const projects: Project[] = [
       "Playtest and note what worked",
       "Decide whether to expand or archive it",
     ],
+    technicalDetails: [
+      "Pop Cat is built with Python and pygame",
+      "Score is saved locally in poptimes.txt",
+      "Source: https://github.com/ivanlin0402/pop-cat",
+    ],
     results: [
-      "Active prototyping phase",
-      "Early experiments helping clarify which ideas are worth developing further",
+      "Pop Cat published on GitHub",
+      "Active prototyping phase for more experiments",
     ],
     lessons: [
       "Small scopes make experimentation sustainable",
       "Writing down outcomes helps more than keeping everything in memory",
     ],
     media: "Screenshots and clips will be added as prototypes mature.",
-    githubUrl: "https://github.com/ivanlin0402",
-    demoUrl: "#",
+    githubUrl: "https://github.com/ivanlin0402/pop-cat",
+    updates: [
+      {
+        date: "2026-09-05",
+        title: "Published Pop Cat on GitHub",
+        description: "Pushed the pygame clicker to ivanlin0402/pop-cat.",
+        status: "completed",
+      },
+      {
+        date: "2026-09",
+        title: "More game experiments",
+        status: "upcoming",
+      },
+    ],
   },
 ];
 
