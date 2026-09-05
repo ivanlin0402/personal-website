@@ -11,7 +11,7 @@ import { formatGreeting } from "@/lib/i18n/dictionary";
 
 export default function HomePage() {
   const featured = getFeaturedProjects();
-  const { t } = useLanguage();
+  const { t, site } = useLanguage();
 
   return (
     <div className="container-page py-12 sm:py-16">
@@ -23,17 +23,10 @@ export default function HomePage() {
           {formatGreeting(t.home.greeting, siteConfig.name)}
         </h1>
         <p className="animate-fade-in-delay mt-4 text-base leading-relaxed text-muted sm:text-lg">
-          {t.home.tagline}
+          {site.tagline}
         </p>
-        <div className="animate-fade-in-delay-2 mt-6 flex flex-wrap gap-3">
+        <div className="animate-fade-in-delay-2 mt-6">
           <Button href="/projects">{t.home.viewProjects}</Button>
-          <Button
-            href="https://github.com/ivanlin0402/pop-cat"
-            variant="secondary"
-            external
-          >
-            {t.home.popCatGithub}
-          </Button>
         </div>
       </section>
 

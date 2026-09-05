@@ -15,11 +15,13 @@ import {
   type Locale,
 } from "@/lib/i18n/config";
 import { getDictionary, type Dictionary } from "@/lib/i18n/dictionary";
+import { getSiteContent, type SiteLocaleContent } from "@/data/site";
 
 type LanguageContextValue = {
   locale: Locale;
   setLocale: (locale: Locale) => void;
   t: Dictionary;
+  site: SiteLocaleContent;
 };
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
@@ -33,6 +35,9 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved && isLocale(saved)) {
         setLocaleState(saved);
+      } else if (saved) {
+        // Old languages (es/fr/de) fall back to English
+        localStorage.setItem(STORAGE_KEY, defaultLocale);
       }
     } catch {
       // ignore
@@ -59,6 +64,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       locale,
       setLocale,
       t: getDictionary(locale),
+      site: getSiteContent(locale),
     }),
     [locale, setLocale],
   );

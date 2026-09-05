@@ -51,29 +51,3 @@ export type Project = {
 
   updates?: ProjectUpdate[];
 };
-
-export type NavLink = {
-  label: string;
-  href: string;
-};
-
-export type SocialLink = {
-  label: string;
-  href: string;
-};
-
-export type SiteConfig = {
-  name: string;
-  tagline: string;
-  description: string;
-  navLinks: NavLink[];
-  socialLinks: SocialLink[];
-  email: string;
-  about: {
-    introduction: string;
-    interests: string[];
-    skills: string[];
-    learning: string[];
-    background: string;
-  };
-};

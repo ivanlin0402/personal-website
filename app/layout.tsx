@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     default: siteConfig.name,
     template: `%s · ${siteConfig.name}`,
   },
-  description: siteConfig.description,
+  description: siteConfig.content.en.description,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

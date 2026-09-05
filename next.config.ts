@@ -15,6 +15,8 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   trailingSlash: true,
+  // Hide the Next.js "N" badge in the bottom-left during local development
+  devIndicators: false,
   ...(isGithubPages
     ? {
         basePath: `/${repoName}`,
