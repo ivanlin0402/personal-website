@@ -53,6 +53,7 @@ export type Dictionary = {
     media: string;
     links: string;
     openGithub: string;
+    playInBrowser: string;
   };
   status: Record<ProjectStatus, string>;
   updateStatus: Record<UpdateStatus, string>;
@@ -115,6 +116,7 @@ const en: Dictionary = {
     media: "Media",
     links: "Links",
     openGithub: "Open on GitHub →",
+    playInBrowser: "Play in browser →",
   },
   status: {
     Idea: "Idea",
@@ -190,6 +192,7 @@ const zh: Dictionary = {
     media: "媒體",
     links: "連結",
     openGithub: "在 GitHub 開啟 →",
+    playInBrowser: "在瀏覽器遊玩 →",
   },
   status: {
     Idea: "構想",

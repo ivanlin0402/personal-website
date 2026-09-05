@@ -19,9 +19,12 @@ export type GameItem = {
   title: string;
   platform: string;
   description?: string;
+  /** Playable URL on this site (e.g. /play/pop-cat/) or external link */
   href: string;
   /** Optional cover image path under /public (e.g. /games/pop-cat/popcat.png) */
   image?: string;
+  /** Optional source repository */
+  githubUrl?: string;
 };
 
 export type Project = {

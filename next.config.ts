@@ -8,6 +8,7 @@ import type { NextConfig } from "next";
  */
 const isGithubPages = process.env.GITHUB_PAGES === "true";
 const repoName = "personal-website";
+const basePath = isGithubPages ? `/${repoName}` : "";
 
 const nextConfig: NextConfig = {
   output: "export",
@@ -17,10 +18,13 @@ const nextConfig: NextConfig = {
   trailingSlash: true,
   // Hide the Next.js "N" badge in the bottom-left during local development
   devIndicators: false,
+  env: {
+    NEXT_PUBLIC_BASE_PATH: basePath,
+  },
   ...(isGithubPages
     ? {
-        basePath: `/${repoName}`,
-        assetPrefix: `/${repoName}/`,
+        basePath,
+        assetPrefix: `${basePath}/`,
       }
     : {}),
 };

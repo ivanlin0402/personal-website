@@ -37,6 +37,9 @@ yarn-error.log*
 # local visitor counter fallback
 /.data
 
+# pygbag build workspace (playable copy lives in public/play)
+/game-builds
+
 # vercel
 .vercel
 

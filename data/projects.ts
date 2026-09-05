@@ -85,11 +85,13 @@ export const projects: Project[] = [
     ],
     technicalDetails: [
       "Pop Cat is built with Python and pygame",
-      "Score is saved locally in poptimes.txt",
+      "Browser build packaged with pygbag (WebAssembly) for GitHub Pages",
+      "Score is saved in the browser via localStorage (desktop uses poptimes.txt)",
       "Source: https://github.com/ivanlin0402/pop-cat",
     ],
     results: [
       "Pop Cat published on GitHub",
+      "Playable in the browser on this site",
       "Active prototyping phase for more experiments",
     ],
     lessons: [
@@ -102,8 +104,9 @@ export const projects: Project[] = [
         platform: "Pygame",
         description:
           "A simple clicker — click or press a key to pop the cat and raise your score.",
-        href: "https://github.com/ivanlin0402/pop-cat",
+        href: "/play/pop-cat/",
         image: "/games/pop-cat/popcat.png",
+        githubUrl: "https://github.com/ivanlin0402/pop-cat",
       },
     ],
     updates: [
