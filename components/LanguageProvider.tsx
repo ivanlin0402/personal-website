@@ -42,7 +42,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!ready) return;
-    document.documentElement.lang = locale;
+    document.documentElement.lang = locale === "zh" ? "zh-Hant-TW" : locale;
     try {
       localStorage.setItem(STORAGE_KEY, locale);
     } catch {
