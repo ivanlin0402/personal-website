@@ -1,13 +1,25 @@
+"use client";
+
 import Link from "next/link";
 import { VisitorCount } from "@/components/VisitorCount";
+import { useLanguage } from "@/components/LanguageProvider";
 import { siteConfig } from "@/data/site";
 
 export function Footer() {
+  const { t } = useLanguage();
+
+  const navLinks = [
+    { label: t.nav.home, href: "/" },
+    { label: t.nav.projects, href: "/projects" },
+    { label: t.nav.about, href: "/about" },
+    { label: t.nav.contact, href: "/contact" },
+  ];
+
   return (
     <footer className="mt-auto border-t border-border">
       <div className="container-page flex flex-col gap-4 py-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap gap-x-5 gap-y-2">
-          {siteConfig.navLinks.map((link) => (
+          {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}

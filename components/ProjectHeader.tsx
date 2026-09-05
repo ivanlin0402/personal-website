@@ -1,13 +1,18 @@
+"use client";
+
 import type { ReactNode } from "react";
 import type { Project } from "@/lib/types";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Tag } from "@/components/Tag";
+import { useLanguage } from "@/components/LanguageProvider";
 
 type ProjectHeaderProps = {
   project: Project;
 };
 
 export function ProjectHeader({ project }: ProjectHeaderProps) {
+  const { t } = useLanguage();
+  const categoryLabel = t.categories[project.category] ?? project.category;
   const metaParts: ReactNode[] = [];
 
   if (project.status) {
@@ -20,7 +25,7 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
 
   metaParts.push(
     <span key="category" className="inline-flex items-center gap-2">
-      <Tag>{project.category}</Tag>
+      <Tag>{categoryLabel}</Tag>
     </span>,
   );
 

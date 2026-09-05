@@ -1,4 +1,7 @@
+"use client";
+
 import type { ProjectUpdate, UpdateStatus } from "@/lib/types";
+import { useLanguage } from "@/components/LanguageProvider";
 
 type ProjectTimelineProps = {
   updates: ProjectUpdate[];
@@ -16,17 +19,9 @@ const labelStyles: Record<UpdateStatus, string> = {
   upcoming: "text-dim",
 };
 
-const statusLabel: Record<UpdateStatus, string> = {
-  completed: "Completed",
-  current: "Current",
-  upcoming: "Upcoming",
-};
-
-/**
- * Data-driven project progress timeline.
- * Pass updates from project data — do not hardcode entries in pages.
- */
 export function ProjectTimeline({ updates }: ProjectTimelineProps) {
+  const { t } = useLanguage();
+
   if (updates.length === 0) return null;
 
   return (
@@ -51,8 +46,10 @@ export function ProjectTimeline({ updates }: ProjectTimelineProps) {
                 {update.date}
               </time>
               {status ? (
-                <span className={`text-[12px] font-medium ${labelStyles[status]}`}>
-                  · {statusLabel[status]}
+                <span
+                  className={`text-[12px] font-medium ${labelStyles[status]}`}
+                >
+                  · {t.updateStatus[status]}
                 </span>
               ) : null}
             </div>

@@ -1,20 +1,26 @@
+"use client";
+
 import Link from "next/link";
 import type { Project } from "@/lib/types";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Tag } from "@/components/Tag";
+import { useLanguage } from "@/components/LanguageProvider";
 
 type ProjectCardProps = {
   project: Project;
 };
 
 export function ProjectCard({ project }: ProjectCardProps) {
+  const { t } = useLanguage();
+  const categoryLabel = t.categories[project.category] ?? project.category;
+
   return (
     <Link
       href={`/projects/${project.slug}`}
       className="group flex h-full flex-col rounded-xl border border-border bg-card p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-border-hover hover:bg-card-hover"
     >
       <div className="mb-3 flex flex-wrap items-center gap-2">
-        <Tag>{project.category}</Tag>
+        <Tag>{categoryLabel}</Tag>
         {project.status ? <StatusBadge status={project.status} /> : null}
       </div>
 
@@ -35,7 +41,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
       ) : null}
 
       <span className="mt-4 text-[13px] font-medium text-dim transition-colors duration-200 group-hover:text-accent">
-        View project →
+        {t.project.viewProject}
       </span>
     </Link>
   );

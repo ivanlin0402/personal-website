@@ -1,25 +1,27 @@
+"use client";
+
 import Image from "next/image";
 import type { GameItem } from "@/lib/types";
+import { useLanguage } from "@/components/LanguageProvider";
 
 type GameCatalogGridProps = {
   games: GameItem[];
   heading?: string;
 };
 
-/**
- * Retrogames.cc-inspired catalog grid:
- * cover image (or title plate), platform label, game title, link out.
- */
 export function GameCatalogGrid({
   games,
-  heading = "Games",
+  heading,
 }: GameCatalogGridProps) {
+  const { t } = useLanguage();
+  const title = heading ?? t.project.games;
+
   if (games.length === 0) return null;
 
   return (
     <section className="border-b border-border py-8 last:border-b-0">
       <h2 className="font-heading mb-5 text-lg font-semibold tracking-tight text-foreground">
-        {heading}
+        {title}
       </h2>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -62,7 +64,7 @@ export function GameCatalogGrid({
                 </p>
               ) : null}
               <span className="mt-3 text-[13px] font-medium text-dim transition-colors group-hover:text-accent">
-                Open on GitHub →
+                {t.project.openGithub}
               </span>
             </div>
           </a>

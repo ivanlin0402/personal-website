@@ -1,18 +1,17 @@
-import type { Metadata } from "next";
+"use client";
+
 import { SectionHeading } from "@/components/SectionHeading";
+import { useLanguage } from "@/components/LanguageProvider";
 import { siteConfig } from "@/data/site";
 
-export const metadata: Metadata = {
-  title: "Contact",
-  description: `Get in touch with ${siteConfig.name}`,
-};
-
 export default function ContactPage() {
+  const { t } = useLanguage();
+
   return (
     <div className="container-narrow py-12 sm:py-16">
       <SectionHeading
-        title="Contact"
-        description="Simple ways to reach me."
+        title={t.contactPage.title}
+        description={t.contactPage.description}
       />
 
       <div className="divide-y divide-border border-y border-border">
@@ -21,7 +20,7 @@ export default function ContactPage() {
           className="flex items-center justify-between py-4 text-white transition-colors duration-200 hover:text-accent"
         >
           <div>
-            <p className="text-[13px] text-white/50">Email</p>
+            <p className="text-[13px] text-white/50">{t.contactPage.email}</p>
             <p className="mt-1 text-sm text-white">{siteConfig.email}</p>
           </div>
           <span className="text-white/50">→</span>

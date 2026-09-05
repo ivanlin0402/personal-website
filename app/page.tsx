@@ -1,50 +1,54 @@
+"use client";
+
 import { Button } from "@/components/Button";
 import { CTASection } from "@/components/CTASection";
 import { ProjectGrid } from "@/components/ProjectGrid";
 import { SectionHeading } from "@/components/SectionHeading";
+import { useLanguage } from "@/components/LanguageProvider";
 import { getFeaturedProjects } from "@/data/projects";
 import { siteConfig } from "@/data/site";
+import { formatGreeting } from "@/lib/i18n/dictionary";
 
 export default function HomePage() {
   const featured = getFeaturedProjects();
+  const { t } = useLanguage();
 
   return (
     <div className="container-page py-12 sm:py-16">
       <section className="relative max-w-xl pb-16 pt-4 sm:pb-20 sm:pt-8">
         <p className="animate-fade-in mb-3 text-[13px] font-medium text-dim">
-          Personal project hub
+          {t.home.eyebrow}
         </p>
         <h1 className="animate-fade-in font-heading text-[2.25rem] font-semibold leading-[1.15] tracking-tight text-foreground sm:text-[3.25rem]">
-          Hi, I&apos;m {siteConfig.name}.
+          {formatGreeting(t.home.greeting, siteConfig.name)}
         </h1>
         <p className="animate-fade-in-delay mt-4 text-base leading-relaxed text-muted sm:text-lg">
-          I build things, explore technology, and document projects I&apos;m
-          working on.
+          {t.home.tagline}
         </p>
         <div className="animate-fade-in-delay-2 mt-6 flex flex-wrap gap-3">
-          <Button href="/projects">View Projects</Button>
+          <Button href="/projects">{t.home.viewProjects}</Button>
           <Button
             href="https://github.com/ivanlin0402/pop-cat"
             variant="secondary"
             external
           >
-            Pop Cat on GitHub
+            {t.home.popCatGithub}
           </Button>
         </div>
       </section>
 
       <section className="pb-16 sm:pb-20">
         <SectionHeading
-          title="Featured Projects"
-          description="A selection of things I'm building, exploring, or documenting."
+          title={t.home.featuredTitle}
+          description={t.home.featuredDescription}
         />
         <ProjectGrid projects={featured} />
       </section>
 
       <CTASection
-        title="Browse all projects"
-        description="Filter by category and open any project for the full write-up."
-        buttonLabel="View All Projects"
+        title={t.home.ctaTitle}
+        description={t.home.ctaDescription}
+        buttonLabel={t.home.ctaButton}
         buttonHref="/projects"
       />
     </div>

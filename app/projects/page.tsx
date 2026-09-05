@@ -1,25 +1,23 @@
-import type { Metadata } from "next";
+"use client";
+
 import { ProjectsExplorer } from "@/components/ProjectsExplorer";
 import { SectionHeading } from "@/components/SectionHeading";
+import { useLanguage } from "@/components/LanguageProvider";
 import {
   getAllProjects,
   getProjectCategories,
 } from "@/data/projects";
 
-export const metadata: Metadata = {
-  title: "Projects",
-  description: "All projects, activities, and experiments.",
-};
-
 export default function ProjectsPage() {
   const projects = getAllProjects();
   const categories = getProjectCategories();
+  const { t } = useLanguage();
 
   return (
     <div className="container-page py-12 sm:py-16">
       <SectionHeading
-        title="Projects"
-        description="Everything collected in one place. Filter by category or open a project for more detail."
+        title={t.projectsPage.title}
+        description={t.projectsPage.description}
       />
       <ProjectsExplorer projects={projects} categories={categories} />
     </div>

@@ -1,4 +1,7 @@
+"use client";
+
 import type { ProjectStatus } from "@/lib/types";
+import { useLanguage } from "@/components/LanguageProvider";
 
 const statusStyles: Record<ProjectStatus, string> = {
   Idea: "bg-background-secondary text-muted border-border",
@@ -14,11 +17,13 @@ type StatusBadgeProps = {
 };
 
 export function StatusBadge({ status, className = "" }: StatusBadgeProps) {
+  const { t } = useLanguage();
+
   return (
     <span
       className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[12px] font-medium ${statusStyles[status]} ${className}`}
     >
-      {status}
+      {t.status[status]}
     </span>
   );
 }
