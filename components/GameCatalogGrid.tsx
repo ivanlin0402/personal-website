@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import type { GameItem } from "@/lib/types";
 import { useLanguage } from "@/components/LanguageProvider";
 import { withBasePath } from "@/lib/paths";
@@ -43,12 +42,11 @@ export function GameCatalogGrid({
             >
               <div className="relative aspect-[4/3] overflow-hidden border-b border-border bg-background-secondary">
                 {game.image ? (
-                  <Image
-                    src={game.image}
+                  // eslint-disable-next-line @next/next/no-img-element -- need withBasePath for GitHub Pages static export
+                  <img
+                    src={withBasePath(game.image)}
                     alt={game.title}
-                    fill
-                    className="object-cover transition-transform duration-200 group-hover:scale-[1.02]"
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center px-4 text-center">
