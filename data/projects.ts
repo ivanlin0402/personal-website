@@ -71,7 +71,7 @@ export const projects: Project[] = [
     featured: true,
     tags: ["Programming", "Games", "Experiments", "Pygame"],
     overview:
-      "A growing set of interactive experiments focused on gameplay ideas, small systems, and learning through building. The first published piece is Pop Cat, a simple pygame clicker.",
+      "A growing set of interactive experiments focused on gameplay ideas, small systems, and learning through building. Published pieces include Pop Cat and F1 Time Trial.",
     goals: [
       "Prototype small interactive mechanics",
       "Improve programming and design judgment through practice",
@@ -84,14 +84,14 @@ export const projects: Project[] = [
       "Decide whether to expand or archive it",
     ],
     technicalDetails: [
-      "Pop Cat is built with Python and pygame",
-      "Browser build packaged with pygbag (WebAssembly) for GitHub Pages",
-      "Score is saved in the browser via localStorage (desktop uses poptimes.txt)",
-      "Source: https://github.com/ivanlin0402/pop-cat",
+      "Games are built with Python and pygame",
+      "Browser builds packaged with pygbag (WebAssembly) for GitHub Pages",
+      "Pop Cat: https://github.com/ivanlin0402/pop-cat",
+      "F1 Time Trial (V18 choosable gear): https://github.com/ivanlin0402/f1-time-trial",
     ],
     results: [
-      "Pop Cat published on GitHub",
-      "Playable in the browser on this site",
+      "Pop Cat and F1 Time Trial published on GitHub",
+      "Both playable in the browser on this site",
       "Active prototyping phase for more experiments",
     ],
     lessons: [
@@ -108,12 +108,28 @@ export const projects: Project[] = [
         image: "/games/pop-cat/popcat.png",
         githubUrl: "https://github.com/ivanlin0402/pop-cat",
       },
+      {
+        title: "F1 Time Trial",
+        platform: "Pygame",
+        description:
+          "X accelerate, Z brake, arrows turn, Space for DRS. Yellow sections are DRS zones — race the left part of the track.",
+        href: "/play/f1-time-trial/",
+        image: "/games/f1-time-trial/cover.png",
+        githubUrl: "https://github.com/ivanlin0402/f1-time-trial",
+      },
     ],
     updates: [
       {
         date: "2026-09-05",
         title: "Published Pop Cat on GitHub",
         description: "Pushed the pygame clicker to ivanlin0402/pop-cat.",
+        status: "completed",
+      },
+      {
+        date: "2026-09-06",
+        title: "Published F1 Time Trial",
+        description:
+          "Uploaded V18 (choosable gear) as ivanlin0402/f1-time-trial and added a browser build.",
         status: "completed",
       },
       {
