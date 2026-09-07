@@ -1,6 +1,6 @@
-import type { Project } from "@/lib/types";
+import type { ProjectWithI18n } from "@/lib/i18n/project";
 
-export const projects: Project[] = [
+export const projects: ProjectWithI18n[] = [
   {
     slug: "pc-donation",
     title: "PC Donation Project",
@@ -60,6 +60,50 @@ export const projects: Project[] = [
         status: "upcoming",
       },
     ],
+    i18n: {
+      zh: {
+        title: "電腦捐贈專案",
+        description:
+          "這個專案專注於組裝電腦，並捐贈給有需要的社區或組織。",
+        overview:
+          "這個專案結合硬體組裝與社區支持。目標是取得或再利用零件、組出可靠的電腦，並送到真正需要的地方。",
+        goals: [
+          "定義一套可靠、價格合理、適合捐贈用途的電腦規格",
+          "建立可重複執行的組裝與測試清單",
+          "尋找合作組織並規劃捐贈流程",
+          "記錄整個過程，方便其他人跟做或調整",
+        ],
+        process: [
+          "研究零件選項並訂出最低規格",
+          "估算成本並規劃捐贈協調方式",
+          "在計畫成熟後組裝並測試",
+          "送出電腦並記錄工作流程",
+        ],
+        technicalDetails: [
+          "以適合捐贈用途的中階零件配置為目標",
+          "優先選擇容易取得、維修與更換的零件",
+          "用檢查清單維持組裝與測試步驟的一致性",
+        ],
+        results: [
+          "仍在規劃階段",
+          "已開始草擬組裝規格",
+          "更清楚了解捐贈物流需求",
+        ],
+        lessons: [
+          "清楚的規格比追求極致效能更重要",
+          "捐贈物流需要和組裝本身一樣仔細規劃",
+        ],
+        media: "照片與圖解會在組裝過程中陸續補上。",
+        updates: [
+          { title: "開始專案規劃" },
+          {
+            title: "研究零件中",
+            description: "比較可行的硬體配置與成本。",
+          },
+          { title: "組裝第一台原型" },
+        ],
+      },
+    },
   },
   {
     slug: "game-project",
@@ -138,18 +182,70 @@ export const projects: Project[] = [
         status: "upcoming",
       },
     ],
+    i18n: {
+      zh: {
+        title: "遊戲專案",
+        description: "一系列程式與互動實驗的合集。",
+        overview:
+          "這是一組持續增加的互動實驗，聚焦玩法構想、小型系統，以及在實作中學習。目前已公開的作品包括 Pop Cat 與 F1 Time Trial。",
+        goals: [
+          "試作小型互動機制",
+          "透過實作提升程式與設計判斷力",
+          "把實驗記錄下來，方便之後回顧",
+        ],
+        process: [
+          "選定一個機制或想法",
+          "先做出最小可用版本",
+          "實際遊玩並記下哪些地方有效",
+          "決定要繼續擴充或封存",
+        ],
+        technicalDetails: [
+          "遊戲以 Python 與 pygame 製作",
+          "瀏覽器版本使用 pygbag（WebAssembly）打包，以便部署到 GitHub Pages",
+          "Pop Cat：https://github.com/ivanlin0402/pop-cat",
+          "F1 Time Trial（V18 可選檔位）：https://github.com/ivanlin0402/f1-time-trial",
+        ],
+        results: [
+          "Pop Cat 與 F1 Time Trial 已發布到 GitHub",
+          "兩者都能在本站瀏覽器中遊玩",
+          "仍在積極試作更多實驗",
+        ],
+        lessons: [
+          "小範圍的題目更容易長期持續實驗",
+          "把結果寫下來，比只放在記憶裡更有幫助",
+        ],
+        gameDescriptions: {
+          "Pop Cat":
+            "簡單的點擊遊戲——用滑鼠點擊或按鍵盤讓貓咪 pop，並提高分數。",
+          "F1 Time Trial":
+            "X 加速、Z 煞車、方向鍵轉向、空白鍵開啟 DRS。黃色區塊是 DRS 區域——請跑賽道左側。",
+        },
+        updates: [
+          {
+            title: "在 GitHub 發布 Pop Cat",
+            description: "已將 pygame 點擊遊戲推送到 ivanlin0402/pop-cat。",
+          },
+          {
+            title: "發布 F1 Time Trial",
+            description:
+              "已將 V18（可選檔位）上傳為 ivanlin0402/f1-time-trial，並加入瀏覽器版本。",
+          },
+          { title: "更多遊戲實驗" },
+        ],
+      },
+    },
   },
 ];
 
-export function getAllProjects(): Project[] {
+export function getAllProjects(): ProjectWithI18n[] {
   return projects;
 }
 
-export function getFeaturedProjects(): Project[] {
+export function getFeaturedProjects(): ProjectWithI18n[] {
   return projects.filter((project) => project.featured);
 }
 
-export function getProjectBySlug(slug: string): Project | undefined {
+export function getProjectBySlug(slug: string): ProjectWithI18n | undefined {
   return projects.find((project) => project.slug === slug);
 }
 

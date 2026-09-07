@@ -59,7 +59,7 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
       {project.tags && project.tags.length > 0 ? (
         <div className="mt-4 flex flex-wrap items-center gap-2">
           {project.tags.map((tag) => (
-            <Tag key={tag}>{tag}</Tag>
+            <Tag key={tag}>{t.tags[tag] ?? tag}</Tag>
           ))}
         </div>
       ) : null}

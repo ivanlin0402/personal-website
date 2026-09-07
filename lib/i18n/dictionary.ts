@@ -54,10 +54,22 @@ export type Dictionary = {
     links: string;
     openGithub: string;
     playInBrowser: string;
+    github: string;
+    demo: string;
+    documentation: string;
+  };
+  footer: {
+    visits: string;
+  };
+  notFound: {
+    title: string;
+    description: string;
+    backHome: string;
   };
   status: Record<ProjectStatus, string>;
   updateStatus: Record<UpdateStatus, string>;
   categories: Record<string, string>;
+  tags: Record<string, string>;
 };
 
 const en: Dictionary = {
@@ -117,6 +129,17 @@ const en: Dictionary = {
     links: "Links",
     openGithub: "Open on GitHub →",
     playInBrowser: "Play in browser →",
+    github: "GitHub",
+    demo: "Demo",
+    documentation: "Documentation",
+  },
+  footer: {
+    visits: "visits",
+  },
+  notFound: {
+    title: "Page not found",
+    description: "That page doesn't exist or the project slug is wrong.",
+    backHome: "← Back home",
   },
   status: {
     Idea: "Idea",
@@ -137,6 +160,15 @@ const en: Dictionary = {
     Creative: "Creative",
     Experiments: "Experiments",
     Other: "Other",
+  },
+  tags: {
+    Hardware: "Hardware",
+    Community: "Community",
+    Donation: "Donation",
+    Programming: "Programming",
+    Games: "Games",
+    Experiments: "Experiments",
+    Pygame: "Pygame",
   },
 };
 
@@ -193,6 +225,17 @@ const zh: Dictionary = {
     links: "連結",
     openGithub: "在 GitHub 開啟 →",
     playInBrowser: "在瀏覽器遊玩 →",
+    github: "GitHub",
+    demo: "示範",
+    documentation: "文件",
+  },
+  footer: {
+    visits: "次瀏覽",
+  },
+  notFound: {
+    title: "找不到頁面",
+    description: "這個頁面不存在，或專案網址不正確。",
+    backHome: "← 回到首頁",
   },
   status: {
     Idea: "構想",
@@ -213,6 +256,15 @@ const zh: Dictionary = {
     Creative: "創作",
     Experiments: "實驗",
     Other: "其他",
+  },
+  tags: {
+    Hardware: "硬體",
+    Community: "社群",
+    Donation: "捐贈",
+    Programming: "程式",
+    Games: "遊戲",
+    Experiments: "實驗",
+    Pygame: "Pygame",
   },
 };
 

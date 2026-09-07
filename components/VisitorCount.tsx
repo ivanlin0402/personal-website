@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useLanguage } from "@/components/LanguageProvider";
 import { getSupabaseBrowser } from "@/lib/supabase";
 
 const STORAGE_KEY = "site_visitor_id";
@@ -28,8 +29,10 @@ function getOrCreateVisitorId(): string {
   }
 }
 
-function formatCount(count: number): string {
-  return new Intl.NumberFormat("en-US").format(count);
+function formatCount(count: number, locale: string): string {
+  return new Intl.NumberFormat(locale === "zh" ? "zh-Hant-TW" : "en-US").format(
+    count,
+  );
 }
 
 /**
@@ -38,6 +41,7 @@ function formatCount(count: number): string {
  * Hides itself if Supabase is not configured or the request fails.
  */
 export function VisitorCount() {
+  const { t, locale } = useLanguage();
   const [count, setCount] = useState<number | null>(null);
 
   useEffect(() => {
@@ -75,7 +79,7 @@ export function VisitorCount() {
   return (
     <span className="text-[13px] text-muted">
       {" "}
-      · {formatCount(count)} visits
+      · {formatCount(count, locale)} {t.footer.visits}
     </span>
   );
 }

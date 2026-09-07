@@ -11,80 +11,83 @@ import {
 } from "@/components/ProjectSection";
 import { ProjectTimeline } from "@/components/ProjectTimeline";
 import { useLanguage } from "@/components/LanguageProvider";
+import { localizeProject } from "@/lib/i18n/project";
+import type { ProjectWithI18n } from "@/lib/i18n/project";
 
 type ProjectDetailProps = {
-  project: Project;
+  project: Project | ProjectWithI18n;
 };
 
 export function ProjectDetail({ project }: ProjectDetailProps) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+  const localized = localizeProject(project, locale);
   const hasLinks =
-    Boolean(project.githubUrl) ||
-    Boolean(project.demoUrl) ||
-    Boolean(project.documentationUrl);
+    Boolean(localized.githubUrl) ||
+    Boolean(localized.demoUrl) ||
+    Boolean(localized.documentationUrl);
 
   return (
     <article>
-      <ProjectHeader project={project} />
+      <ProjectHeader project={localized} />
 
       <div className="mt-2">
-        {project.overview ? (
+        {localized.overview ? (
           <ProjectSection title={t.project.overview}>
-            <ProjectParagraph>{project.overview}</ProjectParagraph>
+            <ProjectParagraph>{localized.overview}</ProjectParagraph>
           </ProjectSection>
         ) : null}
 
-        {project.updates && project.updates.length > 0 ? (
+        {localized.updates && localized.updates.length > 0 ? (
           <ProjectSection title={t.project.timeline}>
-            <ProjectTimeline updates={project.updates} />
+            <ProjectTimeline updates={localized.updates} />
           </ProjectSection>
         ) : null}
 
-        {project.games && project.games.length > 0 ? (
-          <GameCatalogGrid games={project.games} />
+        {localized.games && localized.games.length > 0 ? (
+          <GameCatalogGrid games={localized.games} />
         ) : null}
 
-        {project.goals && project.goals.length > 0 ? (
+        {localized.goals && localized.goals.length > 0 ? (
           <ProjectSection title={t.project.goals}>
-            <ProjectList items={project.goals} />
+            <ProjectList items={localized.goals} />
           </ProjectSection>
         ) : null}
 
-        {project.process && project.process.length > 0 ? (
+        {localized.process && localized.process.length > 0 ? (
           <ProjectSection title={t.project.process}>
-            <ProjectList items={project.process} />
+            <ProjectList items={localized.process} />
           </ProjectSection>
         ) : null}
 
-        {project.technicalDetails && project.technicalDetails.length > 0 ? (
+        {localized.technicalDetails && localized.technicalDetails.length > 0 ? (
           <ProjectSection title={t.project.technicalDetails}>
-            <ProjectList items={project.technicalDetails} />
+            <ProjectList items={localized.technicalDetails} />
           </ProjectSection>
         ) : null}
 
-        {project.results && project.results.length > 0 ? (
+        {localized.results && localized.results.length > 0 ? (
           <ProjectSection title={t.project.results}>
-            <ProjectList items={project.results} />
+            <ProjectList items={localized.results} />
           </ProjectSection>
         ) : null}
 
-        {project.lessons && project.lessons.length > 0 ? (
+        {localized.lessons && localized.lessons.length > 0 ? (
           <ProjectSection title={t.project.lessons}>
-            <ProjectList items={project.lessons} />
+            <ProjectList items={localized.lessons} />
           </ProjectSection>
         ) : null}
 
-        {project.media ? (
+        {localized.media ? (
           <ProjectSection title={t.project.media}>
             <p className="rounded-xl border border-dashed border-border px-4 py-6 text-sm text-dim">
-              {project.media}
+              {localized.media}
             </p>
           </ProjectSection>
         ) : null}
 
         {hasLinks ? (
           <ProjectSection title={t.project.links}>
-            <ProjectLinks project={project} />
+            <ProjectLinks project={localized} />
           </ProjectSection>
         ) : null}
       </div>
