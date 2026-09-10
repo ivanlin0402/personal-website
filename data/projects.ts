@@ -156,7 +156,7 @@ export const projects: ProjectWithI18n[] = [
         title: "F1 Time Trial",
         platform: "Pygame",
         description:
-          "X accelerate, Z brake, arrows turn, Space for DRS. Yellow sections are DRS zones — race the left part of the track.",
+          "Keyboard: X gas, Z brake, arrows turn, Space for DRS. On phones/tablets, use the on-screen pads (multi-touch). Yellow sections are DRS zones — race the left part of the track.",
         href: "/play/f1-time-trial/",
         image: "/games/f1-time-trial/cover.png",
         githubUrl: "https://github.com/ivanlin0402/f1-time-trial",
@@ -218,7 +218,7 @@ export const projects: ProjectWithI18n[] = [
           "Pop Cat":
             "簡單的點擊遊戲——用滑鼠點擊或按鍵盤讓貓咪 pop，並提高分數。",
           "F1 Time Trial":
-            "X 加速、Z 煞車、方向鍵轉向、空白鍵開啟 DRS。黃色區塊是 DRS 區域——請跑賽道左側。",
+            "鍵盤：X 加速、Z 煞車、方向鍵轉向、空白鍵開啟 DRS。手機／平板可用螢幕虛擬按鍵（支援多指）。黃色區塊是 DRS 區域——請跑賽道左側。",
         },
         updates: [
           {
