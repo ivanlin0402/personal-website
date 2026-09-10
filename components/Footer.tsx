@@ -33,6 +33,7 @@ export function Footer() {
         <p className="flex flex-wrap items-center text-[13px] text-muted sm:justify-end">
           <span>
             © {new Date().getFullYear()} {siteConfig.name}
+            <VisitorCount />
           </span>
           {siteConfig.socialLinks.map((link) => (
             <span key={link.label} className="inline-flex items-center">
@@ -49,7 +50,6 @@ export function Footer() {
               </a>
             </span>
           ))}
-          <VisitorCount />
         </p>
       </div>
     </footer>
