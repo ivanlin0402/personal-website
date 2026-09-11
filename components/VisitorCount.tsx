@@ -5,8 +5,11 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { getSupabaseBrowser } from "@/lib/supabase";
 
 const VISITOR_ID_KEY = "site_visitor_id";
-const LOCAL_COUNT_KEY = "site_local_visit_count";
-const LOCAL_MARKED_KEY = "site_local_visit_marked";
+const SESSION_HIT_KEY = "site_visit_hit_session";
+
+/** Public hit counter used when Supabase is not configured (works on GitHub Pages). */
+const TALLY_COUNTER_URL =
+  "https://tally.yuki.sh/hits/ivanlin0402-personal-website/site-visits.json";
 
 function createVisitorId(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -31,35 +34,71 @@ function getOrCreateVisitorId(): string {
   }
 }
 
-/** Local fallback when Supabase is unavailable (per-browser unique visits). */
-function registerLocalVisit(): number {
-  try {
-    const raw = localStorage.getItem(LOCAL_COUNT_KEY);
-    let total = Number(raw);
-    if (!Number.isFinite(total) || total < 0) total = 0;
-
-    const marked = localStorage.getItem(LOCAL_MARKED_KEY);
-    if (!marked) {
-      total += 1;
-      localStorage.setItem(LOCAL_COUNT_KEY, String(total));
-      localStorage.setItem(LOCAL_MARKED_KEY, "1");
-    }
-
-    return Math.max(total, 1);
-  } catch {
-    return 1;
-  }
-}
-
 function formatCount(count: number, locale: string): string {
   return new Intl.NumberFormat(locale === "zh" ? "zh-Hant-TW" : "en-US").format(
     count,
   );
 }
 
+async function registerSupabaseVisit(): Promise<number | null> {
+  const supabase = getSupabaseBrowser();
+  if (!supabase) return null;
+
+  const visitorId = getOrCreateVisitorId();
+  const { data, error } = await supabase.rpc("register_visit", {
+    p_visitor_id: visitorId,
+  });
+
+  if (error || data === null || data === undefined) return null;
+
+  const next = typeof data === "number" ? data : Number(data);
+  return Number.isFinite(next) && next >= 0 ? next : null;
+}
+
 /**
- * Unique-visitor count for the footer.
- * Prefers Supabase; falls back to a local count so the footer always shows visits.
+ * Global page-view counter via Tally (no API key).
+ * Increments once per browser tab session; later navigations only read.
+ */
+async function registerTallyVisit(): Promise<number | null> {
+  let alreadyHit = false;
+  try {
+    alreadyHit = sessionStorage.getItem(SESSION_HIT_KEY) === "1";
+  } catch {
+    alreadyHit = false;
+  }
+
+  const url = alreadyHit ? `${TALLY_COUNTER_URL}?mode=read` : TALLY_COUNTER_URL;
+  const response = await fetch(url, {
+    method: "GET",
+    mode: "cors",
+    cache: "no-store",
+  });
+
+  if (!response.ok) return null;
+
+  const payload = (await response.json()) as {
+    visit?: number;
+    visitor?: number;
+  };
+  const next = Number(payload.visit);
+
+  if (!Number.isFinite(next) || next < 0) return null;
+
+  if (!alreadyHit) {
+    try {
+      sessionStorage.setItem(SESSION_HIT_KEY, "1");
+    } catch {
+      // ignore
+    }
+  }
+
+  return next;
+}
+
+/**
+ * Site visit count for the footer.
+ * Prefers Supabase unique visitors when configured; otherwise uses a public
+ * global counter so the number actually updates on GitHub Pages.
  */
 export function VisitorCount() {
   const { t, locale } = useLanguage();
@@ -69,30 +108,24 @@ export function VisitorCount() {
     let cancelled = false;
 
     async function register() {
-      const localCount = registerLocalVisit();
-
       try {
-        const supabase = getSupabaseBrowser();
-        if (supabase) {
-          const visitorId = getOrCreateVisitorId();
-          const { data, error } = await supabase.rpc("register_visit", {
-            p_visitor_id: visitorId,
-          });
-
-          if (!error && data !== null && data !== undefined) {
-            const next = typeof data === "number" ? data : Number(data);
-            if (!cancelled && Number.isFinite(next) && next >= 0) {
-              setCount(next);
-              return;
-            }
-          }
+        const supabaseCount = await registerSupabaseVisit();
+        if (!cancelled && supabaseCount !== null) {
+          setCount(supabaseCount);
+          return;
         }
       } catch {
-        // Fall through to local count
+        // Fall through to Tally
       }
 
-      if (!cancelled) {
-        setCount(localCount);
+      try {
+        const tallyCount = await registerTallyVisit();
+        if (!cancelled && tallyCount !== null) {
+          setCount(tallyCount);
+          return;
+        }
+      } catch {
+        // Hide counter if both backends fail
       }
     }
 

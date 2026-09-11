@@ -7,7 +7,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
  * - NEXT_PUBLIC_SUPABASE_URL
  * - NEXT_PUBLIC_SUPABASE_ANON_KEY
  *
- * Optional on GitHub Pages — without them the visitor count is hidden.
+ * Optional on GitHub Pages — without them the footer uses a public hit counter.
  */
 export function getSupabaseBrowser(): SupabaseClient | null {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

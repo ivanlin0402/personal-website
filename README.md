@@ -61,9 +61,13 @@ Set `featured: true` to show a project on the homepage.
 
 Edit `data/site.ts` for your name, about copy, email, and social links.
 
-## Visitor counter (optional Supabase)
+## Visitor counter
 
-Because GitHub Pages has no server, the footer talks to Supabase **from the browser**.
+The footer shows a live visit count.
+
+**Default (no setup):** uses a public hit counter, so the number updates on GitHub Pages automatically.
+
+**Optional Supabase (unique visitors):**
 
 1. Run [`supabase/visitor-counter.sql`](supabase/visitor-counter.sql) in the Supabase SQL Editor
 2. Add secrets in GitHub → **Settings → Secrets and variables → Actions**:
@@ -71,4 +75,4 @@ Because GitHub Pages has no server, the footer talks to Supabase **from the brow
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 3. For local testing, put the same values in `.env.local` (see `.env.example`)
 
-Without Supabase, the rest of the site still works; the visit count is simply hidden.
+When Supabase is configured, that unique-visitor total is preferred.
