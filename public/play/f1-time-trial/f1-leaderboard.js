@@ -10,6 +10,7 @@
     ready: false,
     mode: "local", // "global" | "local"
     entries: [],
+    last: null, // { team, driver, time, rank }
     error: "",
   };
 
@@ -30,6 +31,35 @@
         return a.time - b.time;
       })
       .slice(0, 10);
+  }
+
+  function normalizeLast(last) {
+    if (!last || typeof last !== "object") return null;
+    const time = Number(last.time);
+    const rank = Number(last.rank);
+    if (!Number.isFinite(time) || time < 5 || time > 900) return null;
+    if (!Number.isFinite(rank) || rank < 1) return null;
+    return {
+      team: String(last.team || "?").slice(0, 24),
+      driver: String(last.driver || "?").slice(0, 24),
+      time: time,
+      rank: Math.floor(rank),
+    };
+  }
+
+  function parseSubmitResult(payload, fallbackLast) {
+    // New shape: { board: [...], last: {...} }
+    if (payload && typeof payload === "object" && !Array.isArray(payload) && payload.board) {
+      return {
+        entries: normalize(payload.board),
+        last: normalizeLast(payload.last) || fallbackLast,
+      };
+    }
+    // Old shape: bare array
+    return {
+      entries: normalize(payload),
+      last: fallbackLast,
+    };
   }
 
   async function loadConfig() {
@@ -103,18 +133,35 @@
     submit: function (team, driver, time) {
       const lap = Number(time);
       if (!Number.isFinite(lap) || lap < 5 || lap > 900) return;
-      // Optimistic local merge while request runs
+
+      const optimisticRank =
+        1 +
+        state.entries.filter(function (e) {
+          return e.time < lap;
+        }).length;
+
+      const optimisticLast = {
+        team: String(team || "?").slice(0, 24),
+        driver: String(driver || "?").slice(0, 24),
+        time: lap,
+        rank: Math.max(1, optimisticRank),
+      };
+
       state.entries = normalize(
         state.entries.concat([{ team: team, driver: driver, time: lap }]),
       );
+      state.last = optimisticLast;
+
       if (!state.config) return;
       rpc(state.config, "submit_f1_lap", {
         p_team: String(team || "").slice(0, 40),
         p_driver: String(driver || "").slice(0, 40),
         p_lap_time: lap,
       })
-        .then(function (rows) {
-          state.entries = normalize(rows);
+        .then(function (payload) {
+          const parsed = parseSubmitResult(payload, optimisticLast);
+          state.entries = parsed.entries;
+          state.last = parsed.last;
           state.mode = "global";
           state.error = "";
         })

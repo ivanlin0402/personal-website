@@ -1,5 +1,6 @@
 -- Global F1 Time Trial leaderboard (top 10 last-lap times).
 -- Run in Supabase SQL Editor (Dashboard → SQL → New query).
+-- Re-run this file to update functions if you already created the table.
 
 create table if not exists public.f1_laps (
   id bigint generated always as identity primary key,
@@ -53,6 +54,8 @@ language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  v_rank int;
 begin
   if p_team is null or length(trim(p_team)) < 1 or length(p_team) > 40 then
     raise exception 'invalid team';
@@ -67,16 +70,29 @@ begin
   insert into public.f1_laps (team, driver, lap_time)
   values (trim(p_team), trim(p_driver), p_lap_time);
 
-  -- Keep table small: delete anything outside the best 50
+  select count(*)::int + 1
+  into v_rank
+  from public.f1_laps
+  where lap_time < p_lap_time;
+
+  -- Keep table small: delete anything outside the best 200 (ranks beyond top 10 still work)
   delete from public.f1_laps
   where id in (
     select id
     from public.f1_laps
     order by lap_time asc
-    offset 50
+    offset 200
   );
 
-  return public.get_f1_leaderboard();
+  return jsonb_build_object(
+    'board', public.get_f1_leaderboard(),
+    'last', jsonb_build_object(
+      'team', trim(p_team),
+      'driver', trim(p_driver),
+      'time', p_lap_time,
+      'rank', v_rank
+    )
+  );
 end;
 $$;
 
