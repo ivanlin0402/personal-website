@@ -14,7 +14,26 @@
     error: "",
   };
 
-  function normalize(entries) {
+  function clearLocalCaches() {
+    try {
+      // Drop older local boards so players start from an empty list after this update
+      [
+        "f1_time_trial_leaderboard",
+        "f1_time_trial_leaderboard_v2",
+        "f1_time_trial_lap_history",
+        "f1_time_trial_lap_history_v2",
+        "f1_time_trial_last_lap",
+        "f1_time_trial_last_lap_v2",
+        "f1_time_trial_leaderboard_v3",
+        "f1_time_trial_lap_history_v3",
+        "f1_time_trial_last_lap_v3",
+      ].forEach(function (key) {
+        window.localStorage.removeItem(key);
+      });
+    } catch (err) {
+      console.warn("F1LB local clear failed", err);
+    }
+  }
     if (!Array.isArray(entries)) return [];
     return entries
       .map(function (item) {
@@ -96,6 +115,7 @@
       return JSON.stringify(state);
     },
     init: async function () {
+      clearLocalCaches();
       const config = await loadConfig();
       if (!config || !config.supabaseUrl || !config.supabaseAnonKey) {
         state.mode = "local";
