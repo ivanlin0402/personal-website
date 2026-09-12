@@ -16,24 +16,30 @@
 
   function clearLocalCaches() {
     try {
-      // Drop older local boards so players start from an empty list after this update
+      var resetFlag = "f1_lb_cleared_2026_09_12";
+      if (window.localStorage.getItem(resetFlag) === "1") return;
       [
         "f1_time_trial_leaderboard",
         "f1_time_trial_leaderboard_v2",
+        "f1_time_trial_leaderboard_v3",
         "f1_time_trial_lap_history",
         "f1_time_trial_lap_history_v2",
+        "f1_time_trial_lap_history_v3",
         "f1_time_trial_last_lap",
         "f1_time_trial_last_lap_v2",
-        "f1_time_trial_leaderboard_v3",
-        "f1_time_trial_lap_history_v3",
         "f1_time_trial_last_lap_v3",
       ].forEach(function (key) {
         window.localStorage.removeItem(key);
       });
+      window.localStorage.setItem(resetFlag, "1");
+      state.entries = [];
+      state.last = null;
     } catch (err) {
       console.warn("F1LB local clear failed", err);
     }
   }
+
+  function normalize(entries) {
     if (!Array.isArray(entries)) return [];
     return entries
       .map(function (item) {
