@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/patch-f1-play.mjs && next build && node scripts/patch-f1-play.mjs",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "patch:f1": "node scripts/patch-f1-play.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.115.0",

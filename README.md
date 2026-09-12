@@ -76,3 +76,16 @@ The footer shows a live visit count.
 3. For local testing, put the same values in `.env.local` (see `.env.example`)
 
 When Supabase is configured, that unique-visitor total is preferred.
+
+## F1 global leaderboard
+
+The in-game Top 10 list (Tab / LB) can be shared across phones and PCs.
+
+1. Create a free [Supabase](https://supabase.com) project (or reuse the visitor-counter one)
+2. Run [`supabase/f1-leaderboard.sql`](supabase/f1-leaderboard.sql) in the SQL Editor
+3. Set the same GitHub Actions secrets as above:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+4. Push to `main` (or re-run the Pages deploy workflow)
+
+Without those secrets the list stays **local to that device** only.
