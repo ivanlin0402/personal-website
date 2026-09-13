@@ -1,6 +1,6 @@
 /**
  * Browser bridge for the F1 pygbag game.
- * Talks to Supabase RPCs so the top-10 board is shared across devices.
+ * Talks to Supabase RPCs so the top-50 board is shared across devices.
  *
  * Reads config from ./config.json:
  *   { "supabaseUrl": "...", "supabaseAnonKey": "..." }
@@ -55,7 +55,7 @@
       .sort(function (a, b) {
         return a.time - b.time;
       })
-      .slice(0, 10);
+      .slice(0, 50);
   }
 
   function normalizeLast(last) {

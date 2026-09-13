@@ -156,7 +156,7 @@ export const projects: ProjectWithI18n[] = [
         title: "F1 Time Trial",
         platform: "Pygame",
         description:
-          "Pick a year from '88 to '25, then a team and driver — ratings change speed. Keyboard: X gas, Z brake, arrows turn, Space for DRS, Tab for the top-10 list. Phones/tablets use on-screen pads (LB opens the list).",
+          "Pick a year from '88 to '25, then a team and driver — ratings change speed. Keyboard: X gas, Z brake, arrows turn, Space for DRS, Tab for the top-50 list. Phones/tablets use on-screen pads (LB opens the list).",
         href: "/play/f1-time-trial/",
         image: "/games/f1-time-trial/cover.png",
         githubUrl: "https://github.com/ivanlin0402/f1-time-trial",
@@ -218,7 +218,7 @@ export const projects: ProjectWithI18n[] = [
           "Pop Cat":
             "簡單的點擊遊戲——用滑鼠點擊或按鍵盤讓貓咪 pop，並提高分數。",
           "F1 Time Trial":
-            "先選年份（'88–'25），再選車隊與車手——評分會影響速度。鍵盤：X 加速、Z 煞車、方向鍵轉向、空白鍵 DRS、Tab 開啟前十名榜。手機／平板用螢幕按鍵（LB 開啟榜單）。",
+            "先選年份（'88–'25），再選車隊與車手——評分會影響速度。鍵盤：X 加速、Z 煞車、方向鍵轉向、空白鍵 DRS、Tab 開啟前五十名榜。手機／平板用螢幕按鍵（LB 開啟榜單）。",
         },
         updates: [
           {

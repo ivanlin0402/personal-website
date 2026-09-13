@@ -1,4 +1,4 @@
--- Global F1 Time Trial leaderboard (top 10 last-lap times).
+-- Global F1 Time Trial leaderboard (top 50 last-lap times).
 -- Run in Supabase SQL Editor (Dashboard → SQL → New query).
 -- Re-run this file to update functions if you already created the table.
 
@@ -37,7 +37,7 @@ begin
     select team, driver, lap_time
     from public.f1_laps
     order by lap_time asc
-    limit 10
+    limit 50
   ) t;
 
   return v_rows;
@@ -75,13 +75,13 @@ begin
   from public.f1_laps
   where lap_time < p_lap_time;
 
-  -- Keep table small: delete anything outside the best 200 (ranks beyond top 10 still work)
+  -- Keep table small: delete anything outside the best 250 (ranks beyond top 50 still work)
   delete from public.f1_laps
   where id in (
     select id
     from public.f1_laps
     order by lap_time asc
-    offset 200
+    offset 250
   );
 
   return jsonb_build_object(
