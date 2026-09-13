@@ -10,6 +10,9 @@ create table if not exists public.f1_laps (
   created_at timestamptz not null default now()
 );
 
+alter table public.f1_laps
+  add column if not exists year integer;
+
 create index if not exists f1_laps_time_idx on public.f1_laps (lap_time asc);
 
 create or replace function public.get_f1_leaderboard()
@@ -26,7 +29,8 @@ begin
       jsonb_build_object(
         'team', team,
         'driver', driver,
-        'time', lap_time
+        'time', lap_time,
+        'year', year
       )
       order by lap_time asc
     ),
@@ -34,7 +38,7 @@ begin
   )
   into v_rows
   from (
-    select team, driver, lap_time
+    select team, driver, lap_time, year
     from public.f1_laps
     order by lap_time asc
     limit 50
@@ -44,10 +48,13 @@ begin
 end;
 $$;
 
+drop function if exists public.submit_f1_lap(text, text, double precision);
+
 create or replace function public.submit_f1_lap(
   p_team text,
   p_driver text,
-  p_lap_time double precision
+  p_lap_time double precision,
+  p_year integer default null
 )
 returns jsonb
 language plpgsql
@@ -56,6 +63,7 @@ set search_path = public
 as $$
 declare
   v_rank int;
+  v_year int;
 begin
   if p_team is null or length(trim(p_team)) < 1 or length(p_team) > 40 then
     raise exception 'invalid team';
@@ -67,8 +75,13 @@ begin
     raise exception 'invalid lap time';
   end if;
 
-  insert into public.f1_laps (team, driver, lap_time)
-  values (trim(p_team), trim(p_driver), p_lap_time);
+  v_year := null;
+  if p_year is not null and p_year >= 1950 and p_year <= 2100 then
+    v_year := p_year;
+  end if;
+
+  insert into public.f1_laps (team, driver, lap_time, year)
+  values (trim(p_team), trim(p_driver), p_lap_time, v_year);
 
   select count(*)::int + 1
   into v_rank
@@ -90,6 +103,7 @@ begin
       'team', trim(p_team),
       'driver', trim(p_driver),
       'time', p_lap_time,
+      'year', v_year,
       'rank', v_rank
     )
   );
@@ -97,7 +111,7 @@ end;
 $$;
 
 grant execute on function public.get_f1_leaderboard() to anon, authenticated;
-grant execute on function public.submit_f1_lap(text, text, double precision) to anon, authenticated;
+grant execute on function public.submit_f1_lap(text, text, double precision, integer) to anon, authenticated;
 
 alter table public.f1_laps enable row level security;
 -- No direct table policies: clients use RPCs only.

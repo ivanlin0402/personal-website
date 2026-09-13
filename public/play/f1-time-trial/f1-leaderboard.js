@@ -10,7 +10,7 @@
     ready: false,
     mode: "local", // "global" | "local"
     entries: [],
-    last: null, // { team, driver, time, rank }
+    last: null, // { team, driver, time, rank, year }
     error: "",
   };
 
@@ -39,6 +39,14 @@
     }
   }
 
+  function parseYear(raw) {
+    const year = Number(raw);
+    if (!Number.isFinite(year)) return null;
+    const value = Math.floor(year);
+    if (value < 1950 || value > 2100) return null;
+    return value;
+  }
+
   function normalize(entries) {
     if (!Array.isArray(entries)) return [];
     return entries
@@ -47,6 +55,7 @@
           team: String(item.team || "?").slice(0, 24),
           driver: String(item.driver || "?").slice(0, 24),
           time: Number(item.time),
+          year: parseYear(item.year),
         };
       })
       .filter(function (item) {
@@ -69,6 +78,7 @@
       driver: String(last.driver || "?").slice(0, 24),
       time: time,
       rank: Math.floor(rank),
+      year: parseYear(last.year),
     };
   }
 
@@ -156,9 +166,10 @@
       }
       return state;
     },
-    submit: function (team, driver, time) {
+    submit: function (team, driver, time, year) {
       const lap = Number(time);
       if (!Number.isFinite(lap) || lap < 5 || lap > 900) return;
+      const season = parseYear(year);
 
       const optimisticRank =
         1 +
@@ -171,10 +182,11 @@
         driver: String(driver || "?").slice(0, 24),
         time: lap,
         rank: Math.max(1, optimisticRank),
+        year: season,
       };
 
       state.entries = normalize(
-        state.entries.concat([{ team: team, driver: driver, time: lap }]),
+        state.entries.concat([{ team: team, driver: driver, time: lap, year: season }]),
       );
       state.last = optimisticLast;
 
@@ -183,6 +195,7 @@
         p_team: String(team || "").slice(0, 40),
         p_driver: String(driver || "").slice(0, 40),
         p_lap_time: lap,
+        p_year: season,
       })
         .then(function (payload) {
           const parsed = parseSubmitResult(payload, optimisticLast);
