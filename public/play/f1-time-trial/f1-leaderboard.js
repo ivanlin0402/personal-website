@@ -16,7 +16,7 @@
 
   function clearLocalCaches() {
     try {
-      var resetFlag = "f1_lb_cleared_2026_09_12";
+      var resetFlag = "f1_lb_cleared_2026_09_13";
       if (window.localStorage.getItem(resetFlag) === "1") return;
       [
         "f1_time_trial_leaderboard",
