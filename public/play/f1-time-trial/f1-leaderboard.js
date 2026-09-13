@@ -82,6 +82,31 @@
     };
   }
 
+  function sameLap(left, right) {
+    if (!left || !right) return false;
+    return (
+      left.team === right.team &&
+      left.driver === right.driver &&
+      left.year === right.year &&
+      Math.round(Number(left.time) * 1000) === Math.round(Number(right.time) * 1000)
+    );
+  }
+
+  function rankOnBoard(entries, last) {
+    var rank = 0;
+    (entries || []).forEach(function (item, i) {
+      if (sameLap(item, last)) rank = i + 1;
+    });
+    if (rank) return rank;
+    return Math.max(
+      1,
+      1 +
+        (entries || []).filter(function (item) {
+          return item.time < last.time;
+        }).length,
+    );
+  }
+
   function parseSubmitResult(payload, fallbackLast) {
     // New shape: { board: [...], last: {...} }
     if (payload && typeof payload === "object" && !Array.isArray(payload) && payload.board) {
@@ -171,23 +196,17 @@
       if (!Number.isFinite(lap) || lap < 5 || lap > 900) return;
       const season = parseYear(year);
 
-      const optimisticRank =
-        1 +
-        state.entries.filter(function (e) {
-          return e.time < lap;
-        }).length;
-
       const optimisticLast = {
         team: String(team || "?").slice(0, 24),
         driver: String(driver || "?").slice(0, 24),
         time: lap,
-        rank: Math.max(1, optimisticRank),
         year: season,
       };
 
       state.entries = normalize(
         state.entries.concat([{ team: team, driver: driver, time: lap, year: season }]),
       );
+      optimisticLast.rank = rankOnBoard(state.entries, optimisticLast);
       state.last = optimisticLast;
 
       if (!state.config) return;
@@ -200,6 +219,9 @@
         .then(function (payload) {
           const parsed = parseSubmitResult(payload, optimisticLast);
           state.entries = parsed.entries;
+          if (parsed.last) {
+            parsed.last.rank = rankOnBoard(parsed.entries, parsed.last);
+          }
           state.last = parsed.last;
           state.mode = "global";
           state.error = "";

@@ -40,7 +40,7 @@ begin
   from (
     select team, driver, lap_time, year
     from public.f1_laps
-    order by lap_time asc
+    order by lap_time asc, id asc
     limit 50
   ) t;
 
@@ -62,6 +62,7 @@ security definer
 set search_path = public
 as $$
 declare
+  v_id bigint;
   v_rank int;
   v_year int;
 begin
@@ -81,12 +82,16 @@ begin
   end if;
 
   insert into public.f1_laps (team, driver, lap_time, year)
-  values (trim(p_team), trim(p_driver), p_lap_time, v_year);
+  values (trim(p_team), trim(p_driver), p_lap_time, v_year)
+  returning id into v_id;
 
-  select count(*)::int + 1
+  select rn
   into v_rank
-  from public.f1_laps
-  where lap_time < p_lap_time;
+  from (
+    select id, row_number() over (order by lap_time asc, id asc) as rn
+    from public.f1_laps
+  ) ranked
+  where ranked.id = v_id;
 
   -- Keep table small: delete anything outside the best 250 (ranks beyond top 50 still work)
   delete from public.f1_laps
