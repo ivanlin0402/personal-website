@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { VisitorCount } from "@/components/VisitorCount";
 import { useLanguage } from "@/components/LanguageProvider";
-import { siteConfig } from "@/data/site";
+import { getDisplayName, siteConfig } from "@/data/site";
 
 export function Footer() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
 
   const navLinks = [
     { label: t.nav.home, href: "/" },
@@ -32,7 +32,7 @@ export function Footer() {
 
         <p className="flex flex-wrap items-center text-[13px] text-muted sm:justify-end">
           <span>
-            © {new Date().getFullYear()} {siteConfig.name}
+            © {new Date().getFullYear()} {getDisplayName(locale)}
             <VisitorCount />
           </span>
           {siteConfig.socialLinks.map((link) => (

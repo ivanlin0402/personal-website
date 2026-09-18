@@ -218,7 +218,7 @@ const zh: Dictionary = {
   },
   contactPage: {
     title: "聯絡",
-    description: "聯絡我的簡單方式。",
+    description: "聯絡我的方式。",
     email: "電子郵件",
   },
   project: {

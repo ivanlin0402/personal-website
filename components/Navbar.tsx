@@ -5,12 +5,12 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/components/LanguageProvider";
-import { siteConfig } from "@/data/site";
+import { getDisplayName } from "@/data/site";
 
 export function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
 
   const navLinks = [
     { label: t.nav.home, href: "/" },
@@ -32,7 +32,7 @@ export function Navbar() {
           className="font-heading shrink-0 text-[13px] font-semibold tracking-wide text-foreground transition-colors duration-200 hover:text-accent"
           onClick={() => setOpen(false)}
         >
-          {siteConfig.name}
+          {getDisplayName(locale)}
         </Link>
 
         <div className="hidden items-center gap-3 md:flex">

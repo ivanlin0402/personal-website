@@ -14,6 +14,8 @@ export type SiteLocaleContent = {
 
 export type SiteConfig = {
   name: string;
+  /** Display name in Traditional Chinese mode */
+  nameZh: string;
   email: string;
   socialLinks: { label: string; href: string }[];
   /** Bilingual site copy — switched by the header language control */
@@ -22,6 +24,7 @@ export type SiteConfig = {
 
 export const siteConfig: SiteConfig = {
   name: "Ivan Lin",
+  nameZh: "林彥呈",
   email: "ivan0402.lin@gmail.com",
   socialLinks: [
     { label: "GitHub", href: "https://github.com/ivanlin0402" },
@@ -64,7 +67,7 @@ export const siteConfig: SiteConfig = {
       description: "用來整理學校、社團、遊戲，以及值得記錄事物的個人網站。",
       about: {
         introduction:
-          "我是 Ivan Lin，目前就讀國立臺灣師範大學附屬高級中學（師大附中）一年級，是臺灣排名第二的高中。我喜歡弄清楚系統怎麼運作、做一些小遊戲，並把學到的東西寫下來。這個網站就是這些專案與筆記的家。",
+          "我是林彥呈，目前就讀國立臺灣師範大學附屬高級中學（師大附中）一年級，是臺灣排名第二的高中。我喜歡弄清楚系統怎麼運作、做一些小遊戲，並把學到的東西寫下來。這個網站就是這些專案與筆記的家。",
         interests: [
           "觀看 Formula 1、棒球與籃球",
           "下西洋棋",
@@ -93,4 +96,8 @@ export const siteConfig: SiteConfig = {
 
 export function getSiteContent(locale: Locale): SiteLocaleContent {
   return siteConfig.content[locale] ?? siteConfig.content.en;
+}
+
+export function getDisplayName(locale: Locale): string {
+  return locale === "zh" ? siteConfig.nameZh : siteConfig.name;
 }

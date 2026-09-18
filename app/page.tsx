@@ -6,12 +6,12 @@ import { ProjectGrid } from "@/components/ProjectGrid";
 import { SectionHeading } from "@/components/SectionHeading";
 import { useLanguage } from "@/components/LanguageProvider";
 import { getFeaturedProjects } from "@/data/projects";
-import { siteConfig } from "@/data/site";
+import { getDisplayName } from "@/data/site";
 import { formatGreeting } from "@/lib/i18n/dictionary";
 
 export default function HomePage() {
   const featured = getFeaturedProjects();
-  const { t, site } = useLanguage();
+  const { t, site, locale } = useLanguage();
 
   return (
     <div className="container-page py-12 sm:py-16">
@@ -20,7 +20,7 @@ export default function HomePage() {
           {t.home.eyebrow}
         </p>
         <h1 className="animate-fade-in font-heading text-[2.25rem] font-semibold leading-[1.15] tracking-tight text-foreground sm:text-[3.25rem]">
-          {formatGreeting(t.home.greeting, siteConfig.name)}
+          {formatGreeting(t.home.greeting, getDisplayName(locale))}
         </h1>
         <p className="animate-fade-in-delay mt-4 text-base leading-relaxed text-muted sm:text-lg">
           {site.tagline}
