@@ -156,6 +156,7 @@ const en: Dictionary = {
   categories: {
     Community: "Community",
     Programming: "Programming",
+    Learning: "Learning",
     Hardware: "Hardware",
     Creative: "Creative",
     Experiments: "Experiments",
@@ -169,6 +170,16 @@ const en: Dictionary = {
     Games: "Games",
     Experiments: "Experiments",
     Pygame: "Pygame",
+    Website: "Website",
+    Web: "Web",
+    Design: "Design",
+    Networking: "Networking",
+    Servers: "Servers",
+    "School Club": "School Club",
+    Drone: "Drone",
+    Learning: "Learning",
+    "Summer Camp": "Summer Camp",
+    Taipei: "Taipei",
   },
 };
 
@@ -252,6 +263,7 @@ const zh: Dictionary = {
   categories: {
     Community: "社群",
     Programming: "程式",
+    Learning: "學習",
     Hardware: "硬體",
     Creative: "創作",
     Experiments: "實驗",
@@ -265,6 +277,16 @@ const zh: Dictionary = {
     Games: "遊戲",
     Experiments: "實驗",
     Pygame: "Pygame",
+    Website: "網站",
+    Web: "網頁",
+    Design: "設計",
+    Networking: "網路管理",
+    Servers: "伺服器",
+    "School Club": "社團",
+    Drone: "無人機",
+    Learning: "學習",
+    "Summer Camp": "暑假營隊",
+    Taipei: "臺北",
   },
 };
 

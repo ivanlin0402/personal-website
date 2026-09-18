@@ -235,6 +235,207 @@ export const projects: ProjectWithI18n[] = [
       },
     },
   },
+  {
+    slug: "cnmc-website",
+    title: "CNMC Website",
+    description:
+      "A website for my high school club CNMC, which focuses on network management and server skills.",
+    category: "Programming",
+    status: "In Progress",
+    year: "2026",
+    featured: true,
+    tags: ["Website", "Networking", "Servers", "School Club"],
+    overview:
+      "CNMC is my high school club for learning network management and server work. This project is the club website — a place to introduce who we are, what we learn, and how people can join or follow club activity.",
+    goals: [
+      "Give CNMC a clear public website for students and visitors",
+      "Explain the club’s focus on networking and servers",
+      "Share club info, activities, and learning topics in one place",
+      "Keep the site simple enough for the club to maintain",
+    ],
+    process: [
+      "List what the club needs on the site (intro, focus, activities, contact)",
+      "Design a simple page structure and navigation",
+      "Build pages and write club-facing content",
+      "Review with club members and publish updates",
+    ],
+    technicalDetails: [
+      "Website for a high school club (CNMC)",
+      "Club topics: network management, servers, and related hands-on practice",
+      "Content structured for intro, learning focus, and club updates",
+      "Hosting and stack details will be added as the site takes shape",
+    ],
+    results: [
+      "Currently an active CNMC member",
+      "Website project started and tracked on this hub",
+      "Site content and structure still being built",
+    ],
+    lessons: [
+      "A club site should explain the craft first, then the schedule",
+      "Networking and server topics need plain-language pages for new members",
+    ],
+    updates: [
+      {
+        date: "2026-09",
+        title: "Joined CNMC and started the club website",
+        description:
+          "Began planning a site that introduces CNMC and its networking / server focus.",
+        status: "current",
+      },
+      {
+        date: "2026",
+        title: "Publish a first public club site version",
+        status: "upcoming",
+      },
+    ],
+    i18n: {
+      zh: {
+        title: "CNMC 網站",
+        description:
+          "為高中社團 CNMC 製作的網站；社團目標是學習網路管理與伺服器相關技能。",
+        overview:
+          "CNMC 是我目前就讀高中的社團，專注於網路管理與伺服器實作。這個專案是社團網站，用來介紹我們是誰、學什麼，以及如何認識／加入社團活動。",
+        goals: [
+          "為 CNMC 建立清楚的公開網站，方便同學與訪客了解",
+          "說明社團以網路管理與伺服器為主的學習方向",
+          "把社團資訊、活動與學習主題集中在同一處",
+          "維持簡單、好維護的網站，方便社團持續更新",
+        ],
+        process: [
+          "整理網站需要的內容（介紹、學習方向、活動、聯絡）",
+          "規劃簡單的頁面結構與導覽",
+          "製作頁面並撰寫社團相關文案",
+          "與社員確認後再發布更新",
+        ],
+        technicalDetails: [
+          "高中社團（CNMC）網站",
+          "社團主題：網路管理、伺服器，以及相關動手實作",
+          "內容結構包含介紹、學習方向與社團動態",
+          "託管與技術細節會在網站成形後補上",
+        ],
+        results: [
+          "目前為 CNMC 社員",
+          "已在本站開始追蹤網站專案",
+          "網站內容與結構仍在建置中",
+        ],
+        lessons: [
+          "社團網站應先講清楚「學什麼」，再放行程",
+          "網路與伺服器主題需要用白話說明，方便新生理解",
+        ],
+        updates: [
+          {
+            title: "加入 CNMC 並開始社團網站",
+            description: "開始規劃介紹 CNMC 及其網路／伺服器方向的網站。",
+          },
+          { title: "發布第一個公開社團網站版本" },
+        ],
+      },
+    },
+  },
+  {
+    slug: "taipei-drone-summer-camp-2026",
+    title: "2026 Taipei Drone Summer Camp",
+    description:
+      "Learning and documenting the 2026 Taipei Drone Education Center summer camp — flight, programming, and hands-on drone practice.",
+    category: "Learning",
+    status: "Planning",
+    year: "2026",
+    featured: true,
+    tags: ["Drone", "Learning", "Summer Camp", "Taipei"],
+    overview:
+      "This project tracks participation in Taipei’s 2026 drone summer camp (115 school year), run by the Taipei Drone Education Center. The camp covers hands-on topics such as FPV flight, drone soccer, programmed flight, DIY assembly, and aerial photo/editing.",
+    goals: [
+      "Join a 2026 Taipei drone summer camp session",
+      "Practice safe flight and basic drone operation",
+      "Learn programming or assembly skills from the chosen track",
+      "Document what was learned on this site",
+    ],
+    process: [
+      "Review camp tracks and pick a session",
+      "Register through Taipei CoolClass / CoolCloud when enrollment opens",
+      "Attend the camp and take notes",
+      "Summarize skills, photos, and takeaways here",
+    ],
+    technicalDetails: [
+      "Hosted by Taipei Drone Education Center (木柵高工活動中心 B1)",
+      "Camp window: around July 2 – August 6, 2026",
+      "Tracks may include FPV, drone soccer, programmed drones, DIY build, and aerial editing",
+      "Registration typically via 酷課雲 (cooc.tp.edu.tw)",
+    ],
+    results: [
+      "Project page created to track the camp",
+      "Waiting for / preparing for the 2026 summer sessions",
+    ],
+    lessons: [
+      "Hands-on camps work best when you pick one clear skill track",
+      "Writing notes soon after each day helps more than waiting until the end",
+    ],
+    updates: [
+      {
+        date: "2026-09",
+        title: "Added the camp as a tracked project",
+        description: "Created this page to plan and document the 2026 Taipei drone summer camp.",
+        status: "completed",
+      },
+      {
+        date: "2026-05",
+        title: "Camp registration window",
+        description: "Registration is expected through CoolClass / CoolCloud around May–June 2026.",
+        status: "upcoming",
+      },
+      {
+        date: "2026-07",
+        title: "Attend summer camp sessions",
+        status: "upcoming",
+      },
+    ],
+    i18n: {
+      zh: {
+        title: "2026 臺北無人機暑假營隊",
+        description:
+          "參與並記錄 2026 臺北市無人機教育中心暑假營隊——飛行、程式與動手實作。",
+        overview:
+          "這個專案用來追蹤 2026（115 學年度）臺北市無人機教育中心暑假營隊。營隊內容包含 FPV 飛行、無人機足球、程控飛行、DIY 組裝，以及空拍與剪輯等實作課程。",
+        goals: [
+          "報名並參加 2026 臺北無人機暑假營隊",
+          "練習安全飛行與基本操控",
+          "從所選梯次學習程式或組裝技能",
+          "把學到的內容整理到本站",
+        ],
+        process: [
+          "查看營隊梯次並選定課程",
+          "在報名開放時透過酷課 APP／酷課雲登記",
+          "參加營隊並做筆記",
+          "把技能、照片與心得整理到這裡",
+        ],
+        technicalDetails: [
+          "主辦：臺北市無人機教育中心（木柵高工活動中心 B1）",
+          "營隊期間約為 2026/7/2–8/6",
+          "可能梯次包含 FPV、無人機足球、程控無人機、DIY 組裝、空拍應用與剪輯",
+          "報名通常透過酷課雲（cooc.tp.edu.tw）",
+        ],
+        results: [
+          "已建立專案頁面方便追蹤",
+          "等待／準備 2026 暑假梯次",
+        ],
+        lessons: [
+          "動手營隊最好先選定一條清楚的技能路線",
+          "當天就寫筆記，比全部結束後再回想更有效",
+        ],
+        updates: [
+          {
+            title: "把營隊加入追蹤專案",
+            description: "建立本頁，用來規劃與記錄 2026 臺北無人機暑假營隊。",
+          },
+          {
+            title: "營隊報名期間",
+            description: "預計約在 2026 年 5–6 月透過酷課 APP／酷課雲報名。",
+          },
+          { title: "參加暑假營隊" },
+        ],
+      },
+    },
+  },
 ];
 
 export function getAllProjects(): ProjectWithI18n[] {
