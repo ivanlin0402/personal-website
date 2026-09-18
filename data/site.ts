@@ -30,53 +30,62 @@ export const siteConfig: SiteConfig = {
   content: {
     en: {
       tagline:
-        "I build things, explore ideas, and document projects I'm working on.",
+        "First-year at HSNU — I build projects, follow sports I love, and keep learning.",
       description:
-        "A personal hub for projects, activities, and things worth documenting.",
+        "A personal hub for school, clubs, games, and things worth documenting.",
       about: {
         introduction:
-          "I'm someone who likes building things, figuring out how they work, and writing down what I learn along the way. This site is a home for those projects and notes.",
+          "I'm Ivan Lin, a first-year student at HSNU (National Taiwan Normal University Affiliated High School), the second-best high school in Taiwan. I like figuring out how systems work, making small games, and writing down what I learn. This site is where I keep those projects and notes.",
         interests: [
+          "Watching Formula 1, baseball, and basketball",
+          "Playing chess",
           "Building and documenting side projects",
-          "Hardware tinkering and repair",
-          "Programming and interactive experiments",
-          "Community and volunteer work",
+          "Network management and servers through CNMC, my school club",
+          "Hardware tinkering and interactive experiments",
         ],
         skills: [
           "Web development",
+          "Python / pygame game experiments",
+          "Project planning and note-taking",
           "Problem solving",
-          "Project planning",
-          "Technical writing",
         ],
         learning: [
-          "Deeper systems and hardware knowledge",
+          "Keeping my school grades strong this year",
+          "Network management and server basics in CNMC",
           "Game and interactive design",
-          "Better ways to organize and share work",
+          "Learning as much as I can across school and projects",
         ],
         background:
-          "I explore ideas across programming, hardware, creative work, and community projects. The goal of this site is simple: keep a clear record of what I'm working on and how it evolves over time.",
+          "I started with small programs and games, then built this site so I had one place to collect them. My favorite project so far is F1 Time Trial — it features one of my favorite sports, and it's the most complete game I've made. Outside of coding I watch F1, baseball, and basketball, and I play chess. This year my goal is simple: keep my grades up and learn as much as I can.",
       },
     },
     zh: {
-      tagline: "我喜歡動手做東西、探索想法，並記錄正在進行的專案。",
-      description: "一個用來整理專案、活動，以及值得記錄事物的個人網站。",
+      tagline: "師大附中一年級——做專案、追喜歡的運動，並持續學習。",
+      description: "用來整理學校、社團、遊戲，以及值得記錄事物的個人網站。",
       about: {
         introduction:
-          "我喜歡動手做東西、弄清楚它們怎麼運作，並把學到的東西寫下來。這個網站就是這些專案和筆記的家。",
+          "我是 Ivan Lin，目前就讀國立臺灣師範大學附屬高級中學（師大附中）一年級，是臺灣排名第二的高中。我喜歡弄清楚系統怎麼運作、做一些小遊戲，並把學到的東西寫下來。這個網站就是這些專案與筆記的家。",
         interests: [
+          "觀看 Formula 1、棒球與籃球",
+          "下西洋棋",
           "建構並記錄個人專案",
-          "硬體動手與維修",
-          "程式與互動實驗",
-          "社群與志願工作",
+          "透過學校社團 CNMC 學習網路管理與伺服器",
+          "硬體動手與互動實驗",
         ],
-        skills: ["網頁開發", "問題解決", "專案規劃", "技術寫作"],
+        skills: [
+          "網頁開發",
+          "Python／pygame 遊戲實驗",
+          "專案規劃與筆記",
+          "問題解決",
+        ],
         learning: [
-          "更深入的系統與硬體知識",
+          "維持今年學校成績",
+          "在 CNMC 學習網路管理與伺服器基礎",
           "遊戲與互動設計",
-          "更好的整理與分享方式",
+          "在課業與專案中盡量多學",
         ],
         background:
-          "我在程式、硬體、創作和社群專案之間探索想法。這個網站的目標很簡單：清楚記錄我正在做什麼，以及它如何隨時間變化。",
+          "我從小型程式與遊戲開始，後來做了這個網站，好把作品集中在一處。目前最喜歡的專案是 F1 Time Trial——它結合了我最喜歡的運動之一，也是我完成度最高的遊戲。課外我會看 F1、棒球、籃球，也會下西洋棋。今年的目標很單純：把成績顧好，並盡可能多學一些。",
       },
     },
   },
