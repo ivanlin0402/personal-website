@@ -101,13 +101,21 @@ export function ProjectDetail({ project }: ProjectDetailProps) {
                 }`}
               >
                 {localized.mediaImages?.map((src, index) => (
-                  // eslint-disable-next-line @next/next/no-img-element -- need withBasePath for GitHub Pages static export
-                  <img
+                  <div
                     key={src}
-                    src={withBasePath(src)}
-                    alt={`${localized.title} photo ${index + 1}`}
-                    className="w-full rounded-xl border border-border object-cover"
-                  />
+                    className="overflow-hidden rounded-xl border border-border bg-background-secondary aspect-video"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element -- need withBasePath for GitHub Pages static export */}
+                    <img
+                      src={withBasePath(src)}
+                      alt={`${localized.title} photo ${index + 1}`}
+                      width={1600}
+                      height={900}
+                      loading="lazy"
+                      decoding="async"
+                      className="h-full w-full object-cover object-center"
+                    />
+                  </div>
                 ))}
               </div>
             ) : null}

@@ -46,6 +46,10 @@ export function GameCatalogGrid({
                   <img
                     src={withBasePath(game.image)}
                     alt={game.title}
+                    width={800}
+                    height={600}
+                    loading="lazy"
+                    decoding="async"
                     className="absolute inset-0 h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
                   />
                 ) : (

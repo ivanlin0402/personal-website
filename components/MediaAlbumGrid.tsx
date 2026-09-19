@@ -27,13 +27,17 @@ export function MediaAlbumGrid({ projectSlug, albums }: MediaAlbumGridProps) {
             href={href}
             className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-200 hover:-translate-y-0.5 hover:border-border-hover hover:bg-card-hover"
           >
-            <div className="relative aspect-[4/3] overflow-hidden border-b border-border bg-background-secondary">
+            <div className="relative aspect-video overflow-hidden border-b border-border bg-background-secondary">
               {cover ? (
                 // eslint-disable-next-line @next/next/no-img-element -- need withBasePath for GitHub Pages static export
                 <img
                   src={withBasePath(cover)}
                   alt={album.title}
-                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
+                  width={1600}
+                  height={900}
+                  loading="lazy"
+                  decoding="async"
+                  className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-200 group-hover:scale-[1.02]"
                 />
               ) : null}
             </div>
