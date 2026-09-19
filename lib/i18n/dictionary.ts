@@ -54,6 +54,8 @@ export type Dictionary = {
     links: string;
     openGithub: string;
     playInBrowser: string;
+    viewPhotos: string;
+    backToProject: string;
     github: string;
     demo: string;
     documentation: string;
@@ -129,6 +131,8 @@ const en: Dictionary = {
     links: "Links",
     openGithub: "Open on GitHub →",
     playInBrowser: "Play in browser →",
+    viewPhotos: "View photos →",
+    backToProject: "← Back to project",
     github: "GitHub",
     demo: "Demo",
     documentation: "Documentation",
@@ -236,6 +240,8 @@ const zh: Dictionary = {
     links: "連結",
     openGithub: "在 GitHub 開啟 →",
     playInBrowser: "在瀏覽器遊玩 →",
+    viewPhotos: "查看照片 →",
+    backToProject: "← 回到專案",
     github: "GitHub",
     demo: "示範",
     documentation: "文件",

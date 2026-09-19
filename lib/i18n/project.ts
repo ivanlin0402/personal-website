@@ -1,5 +1,5 @@
 import type { Locale } from "@/lib/i18n/config";
-import type { GameItem, Project, ProjectUpdate } from "@/lib/types";
+import type { GameItem, MediaAlbum, Project, ProjectUpdate } from "@/lib/types";
 
 /** Translatable project fields for a single locale overlay. */
 export type ProjectLocaleOverlay = {
@@ -17,6 +17,8 @@ export type ProjectLocaleOverlay = {
   updates?: Array<{ title: string; description?: string }>;
   /** Descriptions keyed by English game title (titles stay English). */
   gameDescriptions?: Record<string, string>;
+  /** Descriptions keyed by media album slug (titles stay as written). */
+  albumDescriptions?: Record<string, string>;
 };
 
 export type ProjectWithI18n = Project & {
@@ -60,6 +62,14 @@ export function localizeProject(
       overlay.gameDescriptions?.[game.title] ?? game.description,
   }));
 
+  const mediaAlbums: MediaAlbum[] | undefined = project.mediaAlbums?.map(
+    (album) => ({
+      ...album,
+      description:
+        overlay.albumDescriptions?.[album.slug] ?? album.description,
+    }),
+  );
+
   return {
     ...project,
     title: overlay.title ?? project.title,
@@ -74,5 +84,6 @@ export function localizeProject(
     tags: overlay.tags ?? project.tags,
     updates,
     games,
+    mediaAlbums,
   };
 }

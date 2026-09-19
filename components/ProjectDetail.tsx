@@ -2,6 +2,7 @@
 
 import type { Project } from "@/lib/types";
 import { GameCatalogGrid } from "@/components/GameCatalogGrid";
+import { MediaAlbumGrid } from "@/components/MediaAlbumGrid";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { ProjectLinks } from "@/components/ProjectLinks";
 import {
@@ -26,6 +27,12 @@ export function ProjectDetail({ project }: ProjectDetailProps) {
     Boolean(localized.githubUrl) ||
     Boolean(localized.demoUrl) ||
     Boolean(localized.documentationUrl);
+  const hasMediaAlbums = Boolean(
+    localized.mediaAlbums && localized.mediaAlbums.length > 0,
+  );
+  const hasMediaImages = Boolean(
+    localized.mediaImages && localized.mediaImages.length > 0,
+  );
 
   return (
     <article>
@@ -78,28 +85,40 @@ export function ProjectDetail({ project }: ProjectDetailProps) {
           </ProjectSection>
         ) : null}
 
-        {localized.mediaImages && localized.mediaImages.length > 0 ? (
+        {hasMediaAlbums || hasMediaImages || localized.media ? (
           <ProjectSection title={t.project.media}>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {localized.mediaImages.map((src, index) => (
-                // eslint-disable-next-line @next/next/no-img-element -- need withBasePath for GitHub Pages static export
-                <img
-                  key={src}
-                  src={withBasePath(src)}
-                  alt={`${localized.title} photo ${index + 1}`}
-                  className="w-full rounded-xl border border-border object-cover"
-                />
-              ))}
-            </div>
-            {localized.media ? (
+            {hasMediaAlbums ? (
+              <MediaAlbumGrid
+                projectSlug={localized.slug}
+                albums={localized.mediaAlbums ?? []}
+              />
+            ) : null}
+
+            {hasMediaImages ? (
+              <div
+                className={`grid grid-cols-1 gap-4 sm:grid-cols-2 ${
+                  hasMediaAlbums ? "mt-4" : ""
+                }`}
+              >
+                {localized.mediaImages?.map((src, index) => (
+                  // eslint-disable-next-line @next/next/no-img-element -- need withBasePath for GitHub Pages static export
+                  <img
+                    key={src}
+                    src={withBasePath(src)}
+                    alt={`${localized.title} photo ${index + 1}`}
+                    className="w-full rounded-xl border border-border object-cover"
+                  />
+                ))}
+              </div>
+            ) : null}
+
+            {localized.media && !hasMediaAlbums && !hasMediaImages ? (
+              <p className="rounded-xl border border-dashed border-border px-4 py-6 text-sm text-dim">
+                {localized.media}
+              </p>
+            ) : localized.media ? (
               <p className="mt-3 text-sm text-dim">{localized.media}</p>
             ) : null}
-          </ProjectSection>
-        ) : localized.media ? (
-          <ProjectSection title={t.project.media}>
-            <p className="rounded-xl border border-dashed border-border px-4 py-6 text-sm text-dim">
-              {localized.media}
-            </p>
           </ProjectSection>
         ) : null}
 

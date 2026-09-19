@@ -370,12 +370,30 @@ export const projects: ProjectWithI18n[] = [
       "Hands-on camps work best when you pick one clear skill track",
       "Writing notes soon after each day helps more than waiting until the end",
     ],
-    media: "Drone 2.0 / micro:bit kit and controller from camp prep.",
-    mediaImages: [
-      "/projects/taipei-drone-summer-camp-2026/photo-1.jpg",
-      "/projects/taipei-drone-summer-camp-2026/photo-2.jpg",
+    media: "Photos from camp days — open a day tile to view the gallery.",
+    mediaAlbums: [
+      {
+        slug: "9-19-day2",
+        title: "9/19 day2",
+        description:
+          "Day 2 photos: Drone 2.0 / micro:bit kit, controller, and camp setup.",
+        cover: "/projects/taipei-drone-summer-camp-2026/9-19-day2/photo-1.jpg",
+        images: [
+          "/projects/taipei-drone-summer-camp-2026/9-19-day2/photo-1.jpg",
+          "/projects/taipei-drone-summer-camp-2026/9-19-day2/photo-2.jpg",
+          "/projects/taipei-drone-summer-camp-2026/9-19-day2/photo-3.jpg",
+          "/projects/taipei-drone-summer-camp-2026/9-19-day2/photo-4.jpg",
+        ],
+      },
     ],
     updates: [
+      {
+        date: "2026-09-19",
+        title: "Added 9/19 day2 photo album",
+        description:
+          "Grouped today’s drone camp photos into a Media tile named 9/19 day2.",
+        status: "completed",
+      },
       {
         date: "2026-09",
         title: "Added camp kit photos",
@@ -434,8 +452,16 @@ export const projects: ProjectWithI18n[] = [
           "動手營隊最好先選定一條清楚的技能路線",
           "當天就寫筆記，比全部結束後再回想更有效",
         ],
-        media: "營隊準備中的 Drone 2.0 / micro:bit 套件與遙控器。",
+        media: "營隊每日照片——點開日別圖塊查看相簿。",
+        albumDescriptions: {
+          "9-19-day2":
+            "第二天照片：Drone 2.0／micro:bit 套件、遙控器與營隊現場。",
+        },
         updates: [
+          {
+            title: "加入 9/19 day2 相簿",
+            description: "把今天的無人機營隊照片整理成名為 9/19 day2 的媒體圖塊。",
+          },
           {
             title: "加入營隊套件照片",
             description:

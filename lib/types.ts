@@ -27,6 +27,17 @@ export type GameItem = {
   githubUrl?: string;
 };
 
+/** Day / album tile that opens a gallery of project photos. */
+export type MediaAlbum = {
+  slug: string;
+  title: string;
+  description?: string;
+  /** Cover image path under /public */
+  cover?: string;
+  /** Image paths under /public shown on the album page */
+  images: string[];
+};
+
 export type Project = {
   slug: string;
   title: string;
@@ -47,6 +58,8 @@ export type Project = {
   media?: string;
   /** Image paths under /public shown in the Media section. */
   mediaImages?: string[];
+  /** Media day tiles; each opens its own gallery page. */
+  mediaAlbums?: MediaAlbum[];
 
   /** When present, page uses a retrogames-style catalog layout. */
   games?: GameItem[];
