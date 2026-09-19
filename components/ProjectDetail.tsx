@@ -103,17 +103,17 @@ export function ProjectDetail({ project }: ProjectDetailProps) {
                 {localized.mediaImages?.map((src, index) => (
                   <div
                     key={src}
-                    className="overflow-hidden rounded-xl border border-border bg-background-secondary aspect-video"
+                    className="overflow-hidden rounded-xl border border-border bg-black aspect-square"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element -- need withBasePath for GitHub Pages static export */}
                     <img
                       src={withBasePath(src)}
                       alt={`${localized.title} photo ${index + 1}`}
-                      width={1600}
-                      height={900}
+                      width={1200}
+                      height={1200}
                       loading="lazy"
                       decoding="async"
-                      className="h-full w-full object-cover object-center"
+                      className="h-full w-full object-contain object-center"
                     />
                   </div>
                 ))}
