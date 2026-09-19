@@ -370,7 +370,19 @@ export const projects: ProjectWithI18n[] = [
       "Hands-on camps work best when you pick one clear skill track",
       "Writing notes soon after each day helps more than waiting until the end",
     ],
+    media: "Drone 2.0 / micro:bit kit and controller from camp prep.",
+    mediaImages: [
+      "/projects/taipei-drone-summer-camp-2026/photo-1.jpg",
+      "/projects/taipei-drone-summer-camp-2026/photo-2.jpg",
+    ],
     updates: [
+      {
+        date: "2026-09",
+        title: "Added camp kit photos",
+        description:
+          "Added Media photos of the Drone 2.0 / micro:bit programming kit and remote controller.",
+        status: "completed",
+      },
       {
         date: "2026-09",
         title: "Added the camp as a tracked project",
@@ -422,7 +434,13 @@ export const projects: ProjectWithI18n[] = [
           "動手營隊最好先選定一條清楚的技能路線",
           "當天就寫筆記，比全部結束後再回想更有效",
         ],
+        media: "營隊準備中的 Drone 2.0 / micro:bit 套件與遙控器。",
         updates: [
+          {
+            title: "加入營隊套件照片",
+            description:
+              "在媒體區加入 Drone 2.0／micro:bit 編程套件與遙控器照片。",
+          },
           {
             title: "把營隊加入追蹤專案",
             description: "建立本頁，用來規劃與記錄 2026 臺北無人機暑假營隊。",

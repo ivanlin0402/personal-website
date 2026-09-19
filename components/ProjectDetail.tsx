@@ -13,6 +13,7 @@ import { ProjectTimeline } from "@/components/ProjectTimeline";
 import { useLanguage } from "@/components/LanguageProvider";
 import { localizeProject } from "@/lib/i18n/project";
 import type { ProjectWithI18n } from "@/lib/i18n/project";
+import { withBasePath } from "@/lib/paths";
 
 type ProjectDetailProps = {
   project: Project | ProjectWithI18n;
@@ -77,7 +78,24 @@ export function ProjectDetail({ project }: ProjectDetailProps) {
           </ProjectSection>
         ) : null}
 
-        {localized.media ? (
+        {localized.mediaImages && localized.mediaImages.length > 0 ? (
+          <ProjectSection title={t.project.media}>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {localized.mediaImages.map((src, index) => (
+                // eslint-disable-next-line @next/next/no-img-element -- need withBasePath for GitHub Pages static export
+                <img
+                  key={src}
+                  src={withBasePath(src)}
+                  alt={`${localized.title} photo ${index + 1}`}
+                  className="w-full rounded-xl border border-border object-cover"
+                />
+              ))}
+            </div>
+            {localized.media ? (
+              <p className="mt-3 text-sm text-dim">{localized.media}</p>
+            ) : null}
+          </ProjectSection>
+        ) : localized.media ? (
           <ProjectSection title={t.project.media}>
             <p className="rounded-xl border border-dashed border-border px-4 py-6 text-sm text-dim">
               {localized.media}

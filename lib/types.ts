@@ -43,7 +43,10 @@ export type Project = {
   technicalDetails?: string[];
   results?: string[];
   lessons?: string[];
+  /** Optional caption for the Media section. */
   media?: string;
+  /** Image paths under /public shown in the Media section. */
+  mediaImages?: string[];
 
   /** When present, page uses a retrogames-style catalog layout. */
   games?: GameItem[];
