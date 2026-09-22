@@ -374,9 +374,9 @@ export const projects: ProjectWithI18n[] = [
     mediaAlbums: [
       {
         slug: "9-19-day2",
-        title: "9/19 day2",
+        title: "9/19 drone assembly (1)",
         description:
-          "Day 2 photos: Drone 2.0 / micro:bit kit, controller, and camp setup.",
+          "Drone assembly photos: Drone 2.0 / micro:bit kit, controller, and camp setup.",
         cover: "/projects/taipei-drone-summer-camp-2026/9-19-day2/photo-1.jpg",
         images: [
           "/projects/taipei-drone-summer-camp-2026/9-19-day2/photo-1.jpg",
@@ -389,9 +389,9 @@ export const projects: ProjectWithI18n[] = [
     updates: [
       {
         date: "2026-09-19",
-        title: "Added 9/19 day2 photo album",
+        title: "Added 9/19 drone assembly (1) photo album",
         description:
-          "Grouped today’s drone camp photos into a Media tile named 9/19 day2.",
+          "Grouped today’s drone camp photos into a Media tile named 9/19 drone assembly (1).",
         status: "completed",
       },
       {
@@ -455,12 +455,13 @@ export const projects: ProjectWithI18n[] = [
         media: "營隊每日照片——點開日別圖塊查看相簿。",
         albumDescriptions: {
           "9-19-day2":
-            "第二天照片：Drone 2.0／micro:bit 套件、遙控器與營隊現場。",
+            "無人機組裝照片：Drone 2.0／micro:bit 套件、遙控器與營隊現場。",
         },
         updates: [
           {
-            title: "加入 9/19 day2 相簿",
-            description: "把今天的無人機營隊照片整理成名為 9/19 day2 的媒體圖塊。",
+            title: "加入 9/19 drone assembly (1) 相簿",
+            description:
+              "把今天的無人機營隊照片整理成名為 9/19 drone assembly (1) 的媒體圖塊。",
           },
           {
             title: "加入營隊套件照片",

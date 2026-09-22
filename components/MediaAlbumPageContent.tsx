@@ -24,6 +24,8 @@ export function MediaAlbumPageContent({
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const total = localizedAlbum.images.length;
+  const canGoPrev = activeIndex > 0;
+  const canGoNext = activeIndex < total - 1;
 
   function handleScroll() {
     const el = scrollerRef.current;
@@ -35,7 +37,9 @@ export function MediaAlbumPageContent({
   function scrollToIndex(index: number) {
     const el = scrollerRef.current;
     if (!el) return;
-    el.scrollTo({ left: index * el.clientWidth, behavior: "smooth" });
+    const clamped = Math.min(total - 1, Math.max(0, index));
+    el.scrollTo({ left: clamped * el.clientWidth, behavior: "smooth" });
+    setActiveIndex(clamped);
   }
 
   return (
@@ -61,7 +65,7 @@ export function MediaAlbumPageContent({
         ) : null}
       </header>
 
-      <div className="overflow-hidden rounded-xl border border-border bg-black">
+      <div className="relative overflow-hidden rounded-xl border border-border bg-black">
         <div
           ref={scrollerRef}
           onScroll={handleScroll}
@@ -85,6 +89,50 @@ export function MediaAlbumPageContent({
             </div>
           ))}
         </div>
+
+        {canGoPrev ? (
+          <button
+            type="button"
+            aria-label={t.project.previousPhoto}
+            onClick={() => scrollToIndex(activeIndex - 1)}
+            className="absolute left-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-white shadow-sm backdrop-blur-sm transition-colors active:bg-black/75 sm:h-11 sm:w-11"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.25"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+        ) : null}
+
+        {canGoNext ? (
+          <button
+            type="button"
+            aria-label={t.project.nextPhoto}
+            onClick={() => scrollToIndex(activeIndex + 1)}
+            className="absolute right-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-white shadow-sm backdrop-blur-sm transition-colors active:bg-black/75 sm:h-11 sm:w-11"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.25"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </button>
+        ) : null}
       </div>
 
       {total > 1 ? (

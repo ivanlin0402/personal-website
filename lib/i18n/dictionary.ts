@@ -56,6 +56,8 @@ export type Dictionary = {
     playInBrowser: string;
     viewPhotos: string;
     backToProject: string;
+    previousPhoto: string;
+    nextPhoto: string;
     github: string;
     demo: string;
     documentation: string;
@@ -133,6 +135,8 @@ const en: Dictionary = {
     playInBrowser: "Play in browser →",
     viewPhotos: "View photos →",
     backToProject: "← Back to project",
+    previousPhoto: "Previous photo",
+    nextPhoto: "Next photo",
     github: "GitHub",
     demo: "Demo",
     documentation: "Documentation",
@@ -242,6 +246,8 @@ const zh: Dictionary = {
     playInBrowser: "在瀏覽器遊玩 →",
     viewPhotos: "查看照片 →",
     backToProject: "← 回到專案",
+    previousPhoto: "上一張照片",
+    nextPhoto: "下一張照片",
     github: "GitHub",
     demo: "示範",
     documentation: "文件",
