@@ -483,6 +483,27 @@ export const projects: ProjectWithI18n[] = [
       },
     },
   },
+  {
+    slug: "chess",
+    title: "Chess",
+    description: "Review Chess.com games, brilliant moves, and the rating record, then replay any game on the board.",
+    category: "Other",
+    status: "In Progress",
+    year: "2026",
+    featured: true,
+    tags: ["Chess"],
+    chessBoard: true,
+    overview:
+      "Browse the reviewed games by time or accuracy, open a brilliant move to see how it changed the game, and follow the rating record. The board replays the game you pick, or any PGN you paste.",
+    i18n: {
+      zh: {
+        title: "西洋棋",
+        description: "查看 Chess.com 棋局、精彩棋步和等級分戰績，並在棋盤上回放。",
+        overview:
+          "棋局可以依時間或準確率排序。精彩棋步依對那盤棋的影響排列，點進去可以看完整盤。等級分區則記錄各速度的分數和勝敗和。棋盤會播放你選的棋局，也可以貼上自己的 PGN。",
+      },
+    },
+  },
 ];
 
 export function getAllProjects(): ProjectWithI18n[] {

@@ -1,6 +1,7 @@
 "use client";
 
 import type { Project } from "@/lib/types";
+import { ChessLibrary } from "@/components/ChessLibrary";
 import { GameCatalogGrid } from "@/components/GameCatalogGrid";
 import { MediaAlbumGrid } from "@/components/MediaAlbumGrid";
 import { ProjectHeader } from "@/components/ProjectHeader";
@@ -44,6 +45,8 @@ export function ProjectDetail({ project }: ProjectDetailProps) {
             <ProjectParagraph>{localized.overview}</ProjectParagraph>
           </ProjectSection>
         ) : null}
+
+        {localized.chessBoard ? <ChessLibrary /> : null}
 
         {localized.games && localized.games.length > 0 ? (
           <GameCatalogGrid games={localized.games} />

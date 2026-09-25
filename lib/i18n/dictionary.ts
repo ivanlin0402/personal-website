@@ -58,6 +58,44 @@ export type Dictionary = {
     backToProject: string;
     previousPhoto: string;
     nextPhoto: string;
+    board: string;
+    pgnLabel: string;
+    loadPgn: string;
+    exampleNote: string;
+    play: string;
+    pause: string;
+    toStart: string;
+    previousMove: string;
+    nextMove: string;
+    toEnd: string;
+    invalidPgn: string;
+    white: string;
+    black: string;
+    startingPosition: string;
+    chessGames: string;
+    sortBy: string;
+    sortTime: string;
+    sortAccuracy: string;
+    chessOpponent: string;
+    chessYou: string;
+    chessWin: string;
+    chessLoss: string;
+    chessDraw: string;
+    viewGame: string;
+    openOnChesscom: string;
+    showMoreGames: string;
+    chessBrilliants: string;
+    brilliantBenefit: string;
+    brilliantNote: string;
+    chessRatings: string;
+    chessRecord: string;
+    chessCurrent: string;
+    chessBest: string;
+    ratingChartNote: string;
+    reviewedGamesNote: string;
+    boardMine: string;
+    boardOwn: string;
+    boardMineNote: string;
     github: string;
     demo: string;
     documentation: string;
@@ -137,6 +175,46 @@ const en: Dictionary = {
     backToProject: "← Back to project",
     previousPhoto: "Previous photo",
     nextPhoto: "Next photo",
+    board: "Board",
+    pgnLabel: "PGN",
+    loadPgn: "Load game",
+    exampleNote: "Example game. Paste your own PGN to replace it.",
+    play: "Play",
+    pause: "Pause",
+    toStart: "Start",
+    previousMove: "Previous move",
+    nextMove: "Next move",
+    toEnd: "End",
+    invalidPgn: "That PGN could not be read. Check the moves and try again.",
+    white: "White",
+    black: "Black",
+    startingPosition: "Starting position",
+    chessGames: "Games",
+    sortBy: "Sort by",
+    sortTime: "Time",
+    sortAccuracy: "Accuracy",
+    chessOpponent: "Opponent",
+    chessYou: "You",
+    chessWin: "Win",
+    chessLoss: "Loss",
+    chessDraw: "Draw",
+    viewGame: "View game",
+    openOnChesscom: "Chess.com",
+    showMoreGames: "Show more",
+    chessBrilliants: "Brilliant moves",
+    brilliantBenefit: "Effect",
+    brilliantNote:
+      "Sorted by how many winning-chance points the next-best move would have given away.",
+    chessRatings: "Ratings",
+    chessRecord: "Record",
+    chessCurrent: "Current",
+    chessBest: "Best",
+    ratingChartNote: "Your Chess.com rating across the reviewed games.",
+    reviewedGamesNote:
+      "374 public games from 25 Aug to 25 Sep 2026. Accuracy is a Stockfish estimate, not Chess.com Game Review.",
+    boardMine: "My games",
+    boardOwn: "Your game",
+    boardMineNote: "Open a game from Games or Brilliant moves to analyze it here.",
     github: "GitHub",
     demo: "Demo",
     documentation: "Documentation",
@@ -188,6 +266,7 @@ const en: Dictionary = {
     Learning: "Learning",
     "Summer Camp": "Summer Camp",
     Taipei: "Taipei",
+    Chess: "Chess",
   },
 };
 
@@ -248,6 +327,45 @@ const zh: Dictionary = {
     backToProject: "← 回到專案",
     previousPhoto: "上一張照片",
     nextPhoto: "下一張照片",
+    board: "棋盤",
+    pgnLabel: "PGN",
+    loadPgn: "載入棋局",
+    exampleNote: "範例棋局。貼上你自己的 PGN 即可換成這一盤。",
+    play: "播放",
+    pause: "暫停",
+    toStart: "開局",
+    previousMove: "上一步",
+    nextMove: "下一步",
+    toEnd: "終局",
+    invalidPgn: "這份 PGN 讀不到。請檢查棋步後再試一次。",
+    white: "白方",
+    black: "黑方",
+    startingPosition: "初始局面",
+    chessGames: "棋局",
+    sortBy: "排序",
+    sortTime: "時間",
+    sortAccuracy: "準確率",
+    chessOpponent: "對手",
+    chessYou: "你",
+    chessWin: "勝",
+    chessLoss: "負",
+    chessDraw: "和",
+    viewGame: "看整盤",
+    openOnChesscom: "Chess.com",
+    showMoreGames: "顯示更多",
+    chessBrilliants: "精彩棋步",
+    brilliantBenefit: "影響",
+    brilliantNote: "依這步比次佳著法多保住多少勝算來排序。",
+    chessRatings: "等級分",
+    chessRecord: "戰績",
+    chessCurrent: "目前",
+    chessBest: "最高",
+    ratingChartNote: "這些已分析棋局裡，你的 Chess.com 等級分變化。",
+    reviewedGamesNote:
+      "2026 年 8 月 25 日至 9 月 25 日的 374 盤公開棋局。準確率是 Stockfish 的估計，不是 Chess.com 的 Game Review。",
+    boardMine: "我的棋局",
+    boardOwn: "自己的棋局",
+    boardMineNote: "從「棋局」或「精彩棋步」選一盤，在這裡分析。",
     github: "GitHub",
     demo: "示範",
     documentation: "文件",
@@ -299,6 +417,7 @@ const zh: Dictionary = {
     Learning: "學習",
     "Summer Camp": "暑假營隊",
     Taipei: "臺北",
+    Chess: "西洋棋",
   },
 };
 

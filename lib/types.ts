@@ -65,6 +65,8 @@ export type Project = {
 
   /** When present, page uses a retrogames-style catalog layout. */
   games?: GameItem[];
+  /** When true, the project page includes a PGN chess replayer. */
+  chessBoard?: boolean;
 
   githubUrl?: string;
   demoUrl?: string;

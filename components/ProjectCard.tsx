@@ -22,6 +22,10 @@ const fallbackLook: Record<string, { panel: string; mark: string }> = {
     panel: "bg-[#121c1a] text-[#b7d4c8]",
     mark: "CNMC",
   },
+  chess: {
+    panel: "bg-[#1a2214] text-[#d7e2c4]",
+    mark: "♟",
+  },
 };
 
 export function ProjectCard({ project }: ProjectCardProps) {

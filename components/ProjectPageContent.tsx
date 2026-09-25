@@ -14,7 +14,8 @@ export function ProjectPageContent({ project }: ProjectPageContentProps) {
   const isWide =
     Boolean(project.games && project.games.length > 0) ||
     Boolean(project.mediaAlbums && project.mediaAlbums.length > 0) ||
-    Boolean(project.mediaImages && project.mediaImages.length > 0);
+    Boolean(project.mediaImages && project.mediaImages.length > 0) ||
+    Boolean(project.chessBoard);
   const containerClass = isWide ? "container-page" : "container-narrow";
 
   return (
