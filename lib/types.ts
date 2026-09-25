@@ -47,6 +47,8 @@ export type Project = {
   year?: string;
   featured?: boolean;
   tags?: string[];
+  /** Cover image path under /public, shown on cards and the home hero. */
+  cover?: string;
 
   overview?: string;
   goals?: string[];

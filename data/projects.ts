@@ -113,6 +113,7 @@ export const projects: ProjectWithI18n[] = [
     status: "In Progress",
     year: "2026",
     featured: true,
+    cover: "/games/f1-time-trial/cover.png",
     tags: ["Programming", "Games", "Experiments", "Pygame"],
     overview:
       "A growing set of interactive experiments focused on gameplay ideas, small systems, and learning through building. Published pieces include Pop Cat and F1 Time Trial.",
@@ -341,6 +342,7 @@ export const projects: ProjectWithI18n[] = [
     status: "Planning",
     year: "2026",
     featured: true,
+    cover: "/projects/taipei-drone-summer-camp-2026/9-19-day2/photo-3.jpg",
     tags: ["Drone", "Learning", "Summer Camp", "Taipei"],
     overview:
       "This project tracks participation in Taipei’s 2026 drone summer camp (115 school year), run by the Taipei Drone Education Center. The camp covers hands-on topics such as FPV flight, drone soccer, programmed flight, DIY assembly, and aerial photo/editing.",

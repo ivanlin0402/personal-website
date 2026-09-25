@@ -11,8 +11,11 @@ type ProjectPageContentProps = {
 
 export function ProjectPageContent({ project }: ProjectPageContentProps) {
   const { t } = useLanguage();
-  const isCatalog = Boolean(project.games && project.games.length > 0);
-  const containerClass = isCatalog ? "container-page" : "container-narrow";
+  const isWide =
+    Boolean(project.games && project.games.length > 0) ||
+    Boolean(project.mediaAlbums && project.mediaAlbums.length > 0) ||
+    Boolean(project.mediaImages && project.mediaImages.length > 0);
+  const containerClass = isWide ? "container-page" : "container-narrow";
 
   return (
     <div className={`${containerClass} py-12 sm:py-16`}>

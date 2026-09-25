@@ -45,14 +45,59 @@ export function ProjectDetail({ project }: ProjectDetailProps) {
           </ProjectSection>
         ) : null}
 
+        {localized.games && localized.games.length > 0 ? (
+          <GameCatalogGrid games={localized.games} />
+        ) : null}
+
+        {hasMediaAlbums || hasMediaImages || localized.media ? (
+          <ProjectSection title={t.project.media}>
+            {hasMediaAlbums ? (
+              <MediaAlbumGrid
+                projectSlug={localized.slug}
+                albums={localized.mediaAlbums ?? []}
+              />
+            ) : null}
+
+            {hasMediaImages ? (
+              <div
+                className={`grid grid-cols-1 gap-4 sm:grid-cols-2 ${
+                  hasMediaAlbums ? "mt-4" : ""
+                }`}
+              >
+                {localized.mediaImages?.map((src, index) => (
+                  <div
+                    key={src}
+                    className="aspect-square overflow-hidden rounded-xl border border-border bg-black"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element -- need withBasePath for GitHub Pages static export */}
+                    <img
+                      src={withBasePath(src)}
+                      alt={`${localized.title} photo ${index + 1}`}
+                      width={1200}
+                      height={1200}
+                      loading="lazy"
+                      decoding="async"
+                      className="h-full w-full object-contain object-center"
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : null}
+
+            {localized.media && !hasMediaAlbums && !hasMediaImages ? (
+              <p className="rounded-xl border border-dashed border-border px-4 py-6 text-sm text-dim">
+                {localized.media}
+              </p>
+            ) : localized.media ? (
+              <p className="mt-3 text-sm text-dim">{localized.media}</p>
+            ) : null}
+          </ProjectSection>
+        ) : null}
+
         {localized.updates && localized.updates.length > 0 ? (
           <ProjectSection title={t.project.timeline}>
             <ProjectTimeline updates={localized.updates} />
           </ProjectSection>
-        ) : null}
-
-        {localized.games && localized.games.length > 0 ? (
-          <GameCatalogGrid games={localized.games} />
         ) : null}
 
         {localized.goals && localized.goals.length > 0 ? (
@@ -82,51 +127,6 @@ export function ProjectDetail({ project }: ProjectDetailProps) {
         {localized.lessons && localized.lessons.length > 0 ? (
           <ProjectSection title={t.project.lessons}>
             <ProjectList items={localized.lessons} />
-          </ProjectSection>
-        ) : null}
-
-        {hasMediaAlbums || hasMediaImages || localized.media ? (
-          <ProjectSection title={t.project.media}>
-            {hasMediaAlbums ? (
-              <MediaAlbumGrid
-                projectSlug={localized.slug}
-                albums={localized.mediaAlbums ?? []}
-              />
-            ) : null}
-
-            {hasMediaImages ? (
-              <div
-                className={`grid grid-cols-1 gap-4 sm:grid-cols-2 ${
-                  hasMediaAlbums ? "mt-4" : ""
-                }`}
-              >
-                {localized.mediaImages?.map((src, index) => (
-                  <div
-                    key={src}
-                    className="overflow-hidden rounded-xl border border-border bg-black aspect-square"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element -- need withBasePath for GitHub Pages static export */}
-                    <img
-                      src={withBasePath(src)}
-                      alt={`${localized.title} photo ${index + 1}`}
-                      width={1200}
-                      height={1200}
-                      loading="lazy"
-                      decoding="async"
-                      className="h-full w-full object-contain object-center"
-                    />
-                  </div>
-                ))}
-              </div>
-            ) : null}
-
-            {localized.media && !hasMediaAlbums && !hasMediaImages ? (
-              <p className="rounded-xl border border-dashed border-border px-4 py-6 text-sm text-dim">
-                {localized.media}
-              </p>
-            ) : localized.media ? (
-              <p className="mt-3 text-sm text-dim">{localized.media}</p>
-            ) : null}
           </ProjectSection>
         ) : null}
 
