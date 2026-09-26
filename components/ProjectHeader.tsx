@@ -8,9 +8,10 @@ import { useLanguage } from "@/components/LanguageProvider";
 
 type ProjectHeaderProps = {
   project: Project;
+  showDescription?: boolean;
 };
 
-export function ProjectHeader({ project }: ProjectHeaderProps) {
+export function ProjectHeader({ project, showDescription = true }: ProjectHeaderProps) {
   const { t } = useLanguage();
   const categoryLabel = t.categories[project.category] ?? project.category;
   const metaParts: ReactNode[] = [];
@@ -43,11 +44,13 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
         {project.title}
       </h1>
 
-      <p className="mt-3 max-w-2xl text-base leading-relaxed text-muted">
-        {project.description}
-      </p>
+      {showDescription ? (
+        <p className="mt-3 max-w-2xl text-base leading-relaxed text-muted">
+          {project.description}
+        </p>
+      ) : null}
 
-      <div className="mt-5 flex flex-wrap items-center gap-x-2 gap-y-2 text-[13px] text-dim">
+      <div className={`${showDescription ? "mt-5" : "mt-4"} flex flex-wrap items-center gap-x-2 gap-y-2 text-[13px] text-dim`}>
         {metaParts.map((part, index) => (
           <span key={index} className="inline-flex items-center gap-2">
             {index > 0 ? <span aria-hidden="true">·</span> : null}

@@ -37,10 +37,10 @@ export function ProjectDetail({ project }: ProjectDetailProps) {
 
   return (
     <article>
-      <ProjectHeader project={localized} />
+      <ProjectHeader project={localized} showDescription={!localized.chessBoard} />
 
       <div className="mt-2">
-        {localized.overview ? (
+        {localized.overview && !localized.chessBoard ? (
           <ProjectSection title={t.project.overview}>
             <ProjectParagraph>{localized.overview}</ProjectParagraph>
           </ProjectSection>

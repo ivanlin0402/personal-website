@@ -427,8 +427,8 @@ export function ChessReplayer({
 
   return (
     <>
-    <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,38rem)_minmax(18rem,1fr)]">
-      <div className="min-w-0 max-w-[38rem]">
+    <div className="grid w-full items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(17.5rem,22rem)]">
+      <div className="min-w-0">
         <div className="flex items-stretch gap-2">
           {shownEval ? (
             <div className="flex w-9 shrink-0 flex-col items-center py-3">
