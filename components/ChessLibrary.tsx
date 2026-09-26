@@ -121,6 +121,7 @@ export function ChessLibrary() {
   const [loadedPgn, setLoadedPgn] = useState<string | undefined>();
   const [loadedPly, setLoadedPly] = useState(0);
   const [loadToken, setLoadToken] = useState(0);
+  const [boardResigned, setBoardResigned] = useState(false);
 
   const sortedGames = useMemo(() => {
     const next = chessGames.filter((game) => game.timeClass === clock);
@@ -159,6 +160,7 @@ export function ChessLibrary() {
     setLoadedPgn(game.pgn);
     setLoadedPly(ply);
     setLoadToken((value) => value + 1);
+    setBoardResigned(game.resigned);
     setPart("board");
   }
 
@@ -380,6 +382,7 @@ export function ChessLibrary() {
             loadedPgn={loadedPgn}
             loadedPly={loadedPly}
             loadToken={loadToken}
+            resigned={boardResigned}
             marks={boardMarks}
           />
         </div>

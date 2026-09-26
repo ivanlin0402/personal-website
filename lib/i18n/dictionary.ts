@@ -74,6 +74,10 @@ export type Dictionary = {
     white: string;
     black: string;
     startingPosition: string;
+    fallenKing: string;
+    winningKing: string;
+    resignedKing: string;
+    drawnKing: string;
     chessGames: string;
     sortBy: string;
     sortTime: string;
@@ -205,6 +209,10 @@ const en: Dictionary = {
     white: "White",
     black: "Black",
     startingPosition: "Starting position",
+    fallenKing: "Checkmated king",
+    winningKing: "Winning king",
+    resignedKing: "Resigned",
+    drawnKing: "Draw",
     chessGames: "Games",
     sortBy: "Sort by",
     sortTime: "Time",
@@ -370,6 +378,10 @@ const zh: Dictionary = {
     white: "白方",
     black: "黑方",
     startingPosition: "初始局面",
+    fallenKing: "被將死",
+    winningKing: "勝方",
+    resignedKing: "認輸",
+    drawnKing: "和棋",
     chessGames: "棋局",
     sortBy: "排序",
     sortTime: "時間",

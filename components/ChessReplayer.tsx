@@ -27,8 +27,12 @@ type ParsedGame = {
   black: string;
   whiteRating: number | null;
   blackRating: number | null;
+  result: string;
+  termination: string;
   error: string | null;
 };
+
+type EndSign = "fallen" | "throne" | "flag" | "half";
 
 function ratingHeader(value: string | undefined): number | null {
   const rating = Number(value);
@@ -37,13 +41,13 @@ function ratingHeader(value: string | undefined): number | null {
 
 function parsePgn(pgn: string): ParsedGame {
   if (!pgn.trim()) {
-    return { moves: [], white: "", black: "", whiteRating: null, blackRating: null, error: null };
+    return { moves: [], white: "", black: "", whiteRating: null, blackRating: null, result: "*", termination: "", error: null };
   }
   const chess = new Chess();
   try {
     chess.loadPgn(pgn);
   } catch {
-    return { moves: [], white: "", black: "", whiteRating: null, blackRating: null, error: "invalid" };
+    return { moves: [], white: "", black: "", whiteRating: null, blackRating: null, result: "*", termination: "", error: "invalid" };
   }
   const headers = chess.getHeaders();
   return {
@@ -52,6 +56,8 @@ function parsePgn(pgn: string): ParsedGame {
     black: headers.Black && headers.Black !== "?" ? headers.Black : "",
     whiteRating: ratingHeader(headers.WhiteElo),
     blackRating: ratingHeader(headers.BlackElo),
+    result: headers.Result ?? "*",
+    termination: headers.Termination ?? "",
     error: null,
   };
 }
@@ -71,7 +77,7 @@ function pgnFromMoves(source: string, sans: string[]): string {
       const seed = new Chess();
       seed.loadPgn(source);
       for (const [key, value] of Object.entries(seed.getHeaders())) {
-        if (key === "Result" || value === "?" || value === "????.??.??") continue;
+        if (key === "Result" || key === "Termination" || value === "?" || value === "????.??.??") continue;
         hadHeaders = true;
         chess.setHeader(key, value);
       }
@@ -167,10 +173,42 @@ function MarkGlyph({ code }: { code: string }) {
   return MOVE_MARK[code]?.text ?? null;
 }
 
+function endLabel(t: { project: { fallenKing: string; winningKing: string; resignedKing: string; drawnKing: string } }, kind: EndSign): string {
+  if (kind === "fallen") return t.project.fallenKing;
+  if (kind === "throne") return t.project.winningKing;
+  if (kind === "flag") return t.project.resignedKing;
+  return t.project.drawnKing;
+}
+
+function EndBadge({ kind, label }: { kind: EndSign; label: string }) {
+  return (
+    <span className={`chess-end chess-end--${kind}`} title={label} aria-label={label}>
+      {kind === "fallen" ? <span className="chess-end__fallen">{GLYPH.k}</span> : null}
+      {kind === "throne" ? (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            fill="currentColor"
+            d="M4 4h3.2v6.2H5.2V20h13.6V10.2H16.8V4H20v7.4c0 1.3-1 2.4-2.3 2.4H15v6.2H9V13.8H6.3C5 13.8 4 12.7 4 11.4V4zm5 0h6v5.2H9V4z"
+          />
+        </svg>
+      ) : null}
+      {kind === "flag" ? (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="currentColor" d="M6 2h2.2v20H6z" />
+          <path fill="currentColor" d="M8.2 3.2h11.2L16.6 8l2.8 4.8H8.2z" />
+        </svg>
+      ) : null}
+      {kind === "half" ? <span className="chess-end__half">½</span> : null}
+    </span>
+  );
+}
+
 type ChessReplayerProps = {
   loadedPgn?: string;
   loadedPly?: number;
   loadToken?: number;
+  /** The loaded game ended because a player resigned. */
+  resigned?: boolean;
   /** One letter per ply: R !! G ! S best E excellent C good I !? M ? X miss B ?? K book. */
   marks?: string;
 };
@@ -179,6 +217,7 @@ export function ChessReplayer({
   loadedPgn,
   loadedPly = 0,
   loadToken = 0,
+  resigned = false,
   marks = "",
 }: ChessReplayerProps) {
   const { t, locale } = useLanguage();
@@ -248,7 +287,31 @@ export function ChessReplayer({
   }, [pgn, safePly]);
 
   const lastMove = safePly > 0 ? game.moves[safePly - 1] : null;
-  const matedKing = position.isCheckmate() ? (position.findPiece({ type: "k", color: position.turn() })[0] ?? null) : null;
+  const atEnd = total > 0 && safePly === total;
+  const checkmate = position.isCheckmate();
+  const headerDraw = game.result === "1/2-1/2" || game.result === "1/2";
+  const resignedGame = /resign/i.test(game.termination) || (resigned && pgn === loadedPgn);
+  const winner: "w" | "b" | null = game.result === "1-0" ? "w" : game.result === "0-1" ? "b" : null;
+  const endSigns = new Map<Square, EndSign>();
+  if (atEnd && checkmate) {
+    const loser = position.turn();
+    const mateWinner = loser === "w" ? "b" : "w";
+    const lostSquare = position.findPiece({ type: "k", color: loser })[0];
+    const wonSquare = position.findPiece({ type: "k", color: mateWinner })[0];
+    if (lostSquare) endSigns.set(lostSquare, "fallen");
+    if (wonSquare) endSigns.set(wonSquare, "throne");
+  } else if (atEnd && (headerDraw || position.isDraw())) {
+    for (const color of ["w", "b"] as const) {
+      const square = position.findPiece({ type: "k", color })[0];
+      if (square) endSigns.set(square, "half");
+    }
+  } else if (atEnd && resignedGame && winner) {
+    const loser = winner === "w" ? "b" : "w";
+    const lostSquare = position.findPiece({ type: "k", color: loser })[0];
+    const wonSquare = position.findPiece({ type: "k", color: winner })[0];
+    if (lostSquare) endSigns.set(lostSquare, "flag");
+    if (wonSquare) endSigns.set(wonSquare, "throne");
+  }
   const liveMove = liveMoves[safePly - 1];
   function theoryMark(index: number): string {
     const san = game.moves[index]?.san;
@@ -460,9 +523,7 @@ export function ChessReplayer({
                     className={`chess-square relative flex aspect-square items-center justify-center overflow-hidden border-0 p-0 ${
                       movable ? "cursor-grab" : "cursor-default"
                     } ${
-                      matedKing === square
-                        ? "bg-[#c62828]"
-                        : active
+                      active
                         ? light
                           ? "bg-[#d5dde8]"
                           : "bg-[#5d84b8]"
@@ -483,6 +544,9 @@ export function ChessReplayer({
                       >
                         {GLYPH[piece.type]}
                       </span>
+                    ) : null}
+                    {endSigns.get(square) ? (
+                      <EndBadge kind={endSigns.get(square) as EndSign} label={endLabel(t, endSigns.get(square) as EndSign)} />
                     ) : null}
                     {target ? (
                       <span

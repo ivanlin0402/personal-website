@@ -197,6 +197,56 @@ h4,
   display: block;
 }
 
+.chess-end {
+  position: absolute;
+  z-index: 21;
+  top: 4%;
+  right: 4%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48cqmin;
+  height: 48cqmin;
+  border-radius: 999px;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 45%);
+  pointer-events: none;
+}
+
+.chess-end svg {
+  width: 64%;
+  height: 64%;
+  display: block;
+}
+
+.chess-end--fallen,
+.chess-end--flag {
+  background: #c62828;
+  color: #fff;
+}
+
+.chess-end--throne {
+  background: #2e7d32;
+  color: #f4efe4;
+}
+
+.chess-end--half {
+  background: #3d4a44;
+  color: #f4efe4;
+}
+
+.chess-end__fallen {
+  display: block;
+  font-size: 28cqmin;
+  line-height: 1;
+  transform: rotate(82deg);
+}
+
+.chess-end__half {
+  font-size: 22cqmin;
+  font-weight: 800;
+  line-height: 1;
+}
+
 .animate-fade-in-delay-2 {
   animation: fade-in 0.4s ease-out 0.14s both;
 }
