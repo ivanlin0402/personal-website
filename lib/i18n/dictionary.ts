@@ -62,6 +62,8 @@ export type Dictionary = {
     pgnLabel: string;
     loadPgn: string;
     exampleNote: string;
+    promoteTo: string;
+    promotePiece: Record<"q" | "r" | "b" | "n", string>;
     play: string;
     pause: string;
     toStart: string;
@@ -190,7 +192,9 @@ const en: Dictionary = {
     board: "Board",
     pgnLabel: "PGN",
     loadPgn: "Load game",
-    exampleNote: "Example game. Paste your own PGN to replace it.",
+    exampleNote: "Move the pieces. Legal moves are written into this PGN.",
+    promoteTo: "Promote to",
+    promotePiece: { q: "Queen", r: "Rook", b: "Bishop", n: "Knight" },
     play: "Play",
     pause: "Pause",
     toStart: "Start",
@@ -353,7 +357,9 @@ const zh: Dictionary = {
     board: "棋盤",
     pgnLabel: "PGN",
     loadPgn: "載入棋局",
-    exampleNote: "範例棋局。貼上你自己的 PGN 即可換成這一盤。",
+    exampleNote: "移動棋子。合法的棋步會寫進這份 PGN。",
+    promoteTo: "升變為",
+    promotePiece: { q: "皇后", r: "城堡", b: "主教", n: "騎士" },
     play: "播放",
     pause: "暫停",
     toStart: "開局",

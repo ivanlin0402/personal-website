@@ -3,6 +3,7 @@ import { Chess } from "chess.js";
 import { analyzeGame, type EngineSearch, type ReviewEngine } from "../lib/review/analyzeGame";
 import { detectSacrificeCandidate, noSacrifice } from "../lib/review/brilliant";
 import { classifyMove } from "../lib/review/classifyMove";
+import { isBookMove, openingBookLines } from "../lib/review/openingBook";
 import {
   centipawnLoss,
   evaluationToWinProbability,
@@ -260,7 +261,7 @@ expectClass(
   "blunder",
 );
 expectClass(
-  "book move with a small engine disagreement stays good",
+  "theory move is book rather than a small inaccuracy",
   features({
     book: true,
     winChanceBefore: 0.52,
@@ -268,8 +269,26 @@ expectClass(
     winChanceLoss: 0.08,
     secondWinChance: 0.49,
   }),
-  "good",
+  "book",
 );
+if (!isBookMove([], "e4") || !isBookMove(["e4", "e5", "Nf3", "Nc6"], "Bb5")) {
+  failed += 1;
+  console.error("Ruy Lopez setup should be a book line");
+}
+if (isBookMove([], "a4") || isBookMove(["e4", "e5"], "Qh5")) {
+  failed += 1;
+  console.error("moves outside Modern Chess Openings theory were marked book");
+}
+for (const line of openingBookLines()) {
+  const sans = line.trim().split(/\s+/);
+  for (let index = 0; index < sans.length; index += 1) {
+    if (!isBookMove(sans.slice(0, index), sans[index])) {
+      failed += 1;
+      console.error("book line broke", line, sans[index]);
+      break;
+    }
+  }
+}
 expectClass(
   "routine opening gap is not great",
   features({

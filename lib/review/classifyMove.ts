@@ -103,8 +103,9 @@ function bucket(features: MoveFeatures): Classification {
 export function classifyMove(features: MoveFeatures): Classification {
   if (features.onlyLegalMove) return "best";
   if (brilliantVerdict(features).accepted) return "brilliant";
-  if (canBeGreat(features)) return "great";
   if (collapsed(features)) return "blunder";
+  if (features.book) return "book";
+  if (canBeGreat(features)) return "great";
   if (canBeMiss(features)) return "miss";
   return bucket(features);
 }

@@ -14,6 +14,7 @@ import {
 import type { SideScore } from "@/lib/review/evaluation";
 import { reviewConfig } from "@/lib/review/reviewConfig";
 import { classifyMove } from "@/lib/review/classifyMove";
+import { isBookMove } from "@/lib/review/openingBook";
 import {
   CLASSIFICATIONS,
   type Classification,
@@ -57,6 +58,7 @@ function emptySummary(): ReviewSummary {
     brilliant: 0,
     great: 0,
     best: 0,
+    book: 0,
     excellent: 0,
     good: 0,
     inaccuracy: 0,
@@ -251,7 +253,7 @@ async function reviewMoveAt(
     bestSan: sanFor(fen, bestUci),
     hungQueen: hungQueen(fen, move),
     onlyLegalMove: legal === 1,
-    book: bookMarks[index] === "K",
+    book: bookMarks[index] === "K" || isBookMove(moves.slice(0, index).map((earlier) => earlier.san), move.san),
     earlyPosition: index < reviewConfig.openingPlies,
     sacrificeCandidate,
     engineRank: rankIndex >= 0 ? rankIndex + 1 : null,

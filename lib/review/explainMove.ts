@@ -30,6 +30,12 @@ export function explainMove(move: MoveReview, locale: Locale): string {
     return locale === "zh" ? "這是唯一的合法著法。" : "This was the only legal move.";
   }
 
+  if (classification === "book") {
+    return locale === "zh"
+      ? "開局書。這一步符合《現代國際象棋開局》所收錄的標準開局理論。"
+      : "Book. This move follows standard opening theory from Modern Chess Openings.";
+  }
+
   if (locale === "zh") {
     if (classification === "brilliant") {
       const name = piece ? PIECE_ZH[piece] : "子力";

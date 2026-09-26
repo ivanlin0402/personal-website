@@ -1,22 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Chess, type Move, type PieceSymbol } from "chess.js";
+import { Chess, type Move, type PieceSymbol, type Square } from "chess.js";
 import { GameReviewPanel } from "@/components/GameReviewPanel";
 import { useLanguage } from "@/components/LanguageProvider";
 import { StockfishClient } from "@/lib/engine/stockfishClient";
 import { analyzeGame } from "@/lib/review/analyzeGame";
 import { formatWhiteEval, whiteShare } from "@/lib/review/evaluation";
 import { CLASS_MARK, type GameReview, type MoveReview } from "@/lib/review/reviewTypes";
-
-const EXAMPLE_PGN = `[Event "Example"]
-[White "Example"]
-[Black "Example"]
-[Result "1-0"]
-
-1. e4 e5 2. Nf3 d6 3. d4 Bg4 4. dxe5 Bxf3 5. Qxf3 dxe5 6. Bc4 Nf6 7. Qb3 Qe7
-8. Nc3 c6 9. Bg5 b5 10. Nxb5 cxb5 11. Bxb5+ Nbd7 12. O-O-O Rd8 13. Rxd7 Rxd7
-14. Rd1 Qe6 15. Bxd7+ Nxd7 16. Qb8+ Nxb8 17. Rd8# 1-0`;
+import { isBookMove } from "@/lib/review/openingBook";
 
 const GLYPH: Record<PieceSymbol, string> = {
   k: "♚",
@@ -44,6 +36,9 @@ function ratingHeader(value: string | undefined): number | null {
 }
 
 function parsePgn(pgn: string): ParsedGame {
+  if (!pgn.trim()) {
+    return { moves: [], white: "", black: "", whiteRating: null, blackRating: null, error: null };
+  }
   const chess = new Chess();
   try {
     chess.loadPgn(pgn);
@@ -53,12 +48,44 @@ function parsePgn(pgn: string): ParsedGame {
   const headers = chess.getHeaders();
   return {
     moves: chess.history({ verbose: true }),
-    white: headers.White ?? "",
-    black: headers.Black ?? "",
+    white: headers.White && headers.White !== "?" ? headers.White : "",
+    black: headers.Black && headers.Black !== "?" ? headers.Black : "",
     whiteRating: ratingHeader(headers.WhiteElo),
     blackRating: ratingHeader(headers.BlackElo),
     error: null,
   };
+}
+
+function positionAt(moves: Move[], ply: number): Chess {
+  const chess = new Chess();
+  for (let index = 0; index < ply; index += 1) chess.move(moves[index].san);
+  return chess;
+}
+
+/** Keep existing PGN tags and replace the movetext with the moves now on the board. */
+function pgnFromMoves(source: string, sans: string[]): string {
+  const chess = new Chess();
+  let hadHeaders = false;
+  if (source.trim()) {
+    try {
+      const seed = new Chess();
+      seed.loadPgn(source);
+      for (const [key, value] of Object.entries(seed.getHeaders())) {
+        if (key === "Result" || value === "?" || value === "????.??.??") continue;
+        hadHeaders = true;
+        chess.setHeader(key, value);
+      }
+    } catch {
+      // The board game is valid even if the textarea has not been loaded yet.
+    }
+  }
+  for (const san of sans) chess.move(san);
+  if (chess.isCheckmate()) chess.setHeader("Result", chess.turn() === "w" ? "0-1" : "1-0");
+  else if (chess.isDraw()) chess.setHeader("Result", "1/2-1/2");
+  else chess.setHeader("Result", "*");
+  const text = chess.pgn({ maxWidth: 72 });
+  if (hadHeaders) return text;
+  return text.split(/\n\s*\n/).pop()?.trim() ?? text;
 }
 
 const MOVE_MARK: Record<string, { text?: string; color: string; ink: string }> = {
@@ -155,10 +182,14 @@ export function ChessReplayer({
   marks = "",
 }: ChessReplayerProps) {
   const { t, locale } = useLanguage();
-  const [draft, setDraft] = useState(EXAMPLE_PGN);
-  const [pgn, setPgn] = useState(EXAMPLE_PGN);
+  const [draft, setDraft] = useState("");
+  const [pgn, setPgn] = useState("");
   const [ply, setPly] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const [selected, setSelected] = useState<Square | null>(null);
+  const [promotion, setPromotion] = useState<{ from: Square; to: Square } | null>(null);
+  const [ghost, setGhost] = useState<{ type: PieceSymbol; white: boolean; x: number; y: number } | null>(null);
+  const dragRef = useRef<{ from: Square; x: number; y: number; moved: boolean } | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [review, setReview] = useState<GameReview | null>(null);
   const [liveMoves, setLiveMoves] = useState<MoveReview[]>([]);
@@ -199,21 +230,40 @@ export function ChessReplayer({
   const total = game.moves.length;
   const safePly = Math.min(ply, total);
 
-  const board = useMemo(() => {
-    const chess = new Chess();
-    for (let index = 0; index < safePly; index += 1) {
-      chess.move(game.moves[index].san);
-    }
-    return chess.board();
-  }, [game.moves, safePly]);
+  const position = useMemo(() => positionAt(game.moves, safePly), [game.moves, safePly]);
+  const board = position.board();
+  const sideToMove = position.turn();
+  const legalTargets = useMemo(() => {
+    const targets = new Map<Square, Move>();
+    if (!selected || !position.get(selected)) return targets;
+    for (const move of position.moves({ square: selected, verbose: true })) targets.set(move.to, move);
+    return targets;
+  }, [position, selected]);
+
+  useEffect(() => {
+    setSelected(null);
+    setPromotion(null);
+    setGhost(null);
+    dragRef.current = null;
+  }, [pgn, safePly]);
 
   const lastMove = safePly > 0 ? game.moves[safePly - 1] : null;
+  const matedKing = position.isCheckmate() ? (position.findPiece({ type: "k", color: position.turn() })[0] ?? null) : null;
   const liveMove = liveMoves[safePly - 1];
+  function theoryMark(index: number): string {
+    const san = game.moves[index]?.san;
+    if (!san) return "";
+    return isBookMove(
+      game.moves.slice(0, index).map((move) => move.san),
+      san,
+    )
+      ? "K"
+      : "";
+  }
   const moveMark = liveMove
     ? CLASS_MARK[liveMove.classification]
-    : liveMoves.length === 0 && pgn === loadedPgn && safePly > 0
-      ? (marks[safePly - 1] ?? "")
-      : "";
+    : theoryMark(safePly - 1) ||
+      (liveMoves.length === 0 && pgn === loadedPgn && safePly > 0 ? (marks[safePly - 1] ?? "") : "");
   const shownEval = liveMove
     ? liveMove.evaluationAfter
     : liveMoves[0] && safePly === 0
@@ -297,9 +347,71 @@ export function ChessReplayer({
     setPly(Math.min(total, Math.max(0, next)));
   }
 
+  function playMove(from: Square, to: Square, promote?: PieceSymbol) {
+    const chess = positionAt(game.moves, safePly);
+    const choices = chess.moves({ square: from, verbose: true }).filter((move) => move.to === to);
+    if (choices.length === 0) return;
+    if (choices.some((move) => move.promotion) && !promote) {
+      setPromotion({ from, to });
+      setSelected(from);
+      return;
+    }
+    const chosen = promote ? choices.find((move) => move.promotion === promote) : choices[0];
+    if (!chosen) return;
+    chess.move({ from, to, promotion: promote ?? chosen.promotion });
+    const nextPgn = pgnFromMoves(pgn, chess.history());
+    setLoadError(false);
+    setDraft(nextPgn);
+    setPgn(nextPgn);
+    setPly(chess.history().length);
+    setSelected(null);
+    setPromotion(null);
+  }
+
+  function onSquarePointerDown(event: React.PointerEvent<HTMLButtonElement>, square: Square) {
+    if (event.button !== 0) return;
+    setPlaying(false);
+    const piece = position.get(square);
+    if (selected && legalTargets.has(square)) {
+      playMove(selected, square);
+      return;
+    }
+    if (!piece || piece.color !== sideToMove) {
+      setSelected(null);
+      setPromotion(null);
+      return;
+    }
+    setSelected(square);
+    setPromotion(null);
+    dragRef.current = { from: square, x: event.clientX, y: event.clientY, moved: false };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function onSquarePointerMove(event: React.PointerEvent<HTMLButtonElement>) {
+    const drag = dragRef.current;
+    if (!drag) return;
+    if (!drag.moved && Math.hypot(event.clientX - drag.x, event.clientY - drag.y) < 5) return;
+    drag.moved = true;
+    const piece = position.get(drag.from);
+    if (!piece) return;
+    setGhost({ type: piece.type, white: piece.color === "w", x: event.clientX, y: event.clientY });
+  }
+
+  function onSquarePointerUp(event: React.PointerEvent<HTMLButtonElement>) {
+    const drag = dragRef.current;
+    dragRef.current = null;
+    setGhost(null);
+    if (!drag?.moved) return;
+    const target = document.elementFromPoint(event.clientX, event.clientY);
+    const square = target?.closest("[data-square]")?.getAttribute("data-square");
+    if (square) playMove(drag.from, square as Square);
+  }
+
   function markFor(index: number): string {
     const live = liveMoves[index];
     if (live) return CLASS_MARK[live.classification];
+    const theory = theoryMark(index);
+    if (theory) return theory;
     if (liveMoves.length === 0 && pgn === loadedPgn) return marks[index] ?? "";
     return "";
   }
@@ -314,6 +426,7 @@ export function ChessReplayer({
   }
 
   return (
+    <>
     <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,46rem)_minmax(16rem,22rem)]">
       <div>
         <div className="flex items-stretch gap-2">
@@ -329,26 +442,39 @@ export function ChessReplayer({
           <div className="relative grid grid-cols-8 overflow-hidden rounded-md">
             {board.map((rank, rankIndex) =>
               rank.map((piece, fileIndex) => {
-                const square = `${FILES[fileIndex]}${8 - rankIndex}`;
+                const square = `${FILES[fileIndex]}${8 - rankIndex}` as Square;
                 const light = (rankIndex + fileIndex) % 2 === 0;
-                const active =
-                  lastMove?.from === square || lastMove?.to === square;
+                const active = lastMove?.from === square || lastMove?.to === square;
+                const target = legalTargets.get(square);
+                const movable = piece?.color === sideToMove;
                 return (
-                  <div
+                  <button
                     key={square}
-                    className={`chess-square relative flex aspect-square items-center justify-center overflow-hidden ${
-                      active
+                    type="button"
+                    data-square={square}
+                    aria-label={square}
+                    onPointerDown={(event) => onSquarePointerDown(event, square)}
+                    onPointerMove={onSquarePointerMove}
+                    onPointerUp={onSquarePointerUp}
+                    className={`chess-square relative flex aspect-square items-center justify-center overflow-hidden border-0 p-0 ${
+                      movable ? "cursor-grab" : "cursor-default"
+                    } ${
+                      matedKing === square
+                        ? "bg-[#c62828]"
+                        : active
                         ? light
                           ? "bg-[#d5dde8]"
                           : "bg-[#5d84b8]"
                         : light
                           ? "bg-[#c5ced8]"
                           : "bg-[#3f6294]"
-                    }`}
+                    } ${selected === square ? "shadow-[inset_0_0_0_3px_#e7c34b]" : ""}`}
                   >
                     {piece ? (
                       <span
-                        className={`chess-piece bg-clip-text font-heading leading-none text-transparent ${
+                        className={`chess-piece pointer-events-none bg-clip-text font-heading leading-none text-transparent ${
+                          ghost && selected === square ? "opacity-30" : ""
+                        } ${
                           piece.color === "w"
                             ? "bg-gradient-to-br from-[#ffffff] via-[#ffffff] to-[#f6f5f3] [-webkit-text-stroke:1px_#9aa3ad]"
                             : "bg-gradient-to-br from-[#1c1c1c] via-[#050505] to-[#000000] [-webkit-text-stroke:1px_#c9ced6]"
@@ -356,6 +482,15 @@ export function ChessReplayer({
                       >
                         {GLYPH[piece.type]}
                       </span>
+                    ) : null}
+                    {target ? (
+                      <span
+                        className={`pointer-events-none absolute rounded-full ${
+                          target.captured
+                            ? "h-[86%] w-[86%] border-[6px] border-black/25"
+                            : "h-[28%] w-[28%] bg-black/25"
+                        }`}
+                      />
                     ) : null}
                     {moveMark && MOVE_MARK[moveMark] && lastMove?.to === square ? (
                       <span
@@ -380,7 +515,7 @@ export function ChessReplayer({
                         {8 - rankIndex}
                       </span>
                     ) : null}
-                  </div>
+                  </button>
                 );
               }),
             )}
@@ -392,6 +527,25 @@ export function ChessReplayer({
           </div>
         </div>
         </div>
+
+        {promotion ? (
+          <div className="mt-3 flex items-center gap-2">
+            <span className="text-[13px] text-dim">{t.project.promoteTo}</span>
+            {(["q", "r", "b", "n"] as const).map((piece) => (
+              <button
+                key={piece}
+                type="button"
+                aria-label={t.project.promotePiece[piece]}
+                onClick={() => playMove(promotion.from, promotion.to, piece)}
+                className={`flex h-10 w-10 items-center justify-center rounded-lg border border-border text-3xl leading-none ${
+                  sideToMove === "w" ? "bg-[#1c1c1c] text-[#f7f7f5]" : "bg-[#f4f1ea] text-[#111111]"
+                }`}
+              >
+                {GLYPH[piece]}
+              </button>
+            ))}
+          </div>
+        ) : null}
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <button
@@ -540,12 +694,23 @@ export function ChessReplayer({
           </button>
           {loadError ? (
             <p className="text-[13px] text-[#e0a3a3]">{t.project.invalidPgn}</p>
-          ) : pgn === EXAMPLE_PGN ? (
+          ) : (
             <p className="text-[13px] text-dim">{t.project.exampleNote}</p>
-          ) : null}
+          )}
         </div>
       </div>
     </div>
+    {ghost ? (
+      <span
+        className={`pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-1/2 text-5xl leading-none ${
+          ghost.white ? "text-[#f7f7f5] [text-shadow:0_0_1px_#111]" : "text-[#111111] [text-shadow:0_0_1px_#ddd]"
+        }`}
+        style={{ left: ghost.x, top: ghost.y }}
+      >
+        {GLYPH[ghost.type]}
+      </span>
+    ) : null}
+    </>
   );
 }
 
