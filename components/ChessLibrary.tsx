@@ -28,6 +28,23 @@ function formatDate(date: string, locale: Locale): string {
   return `${names[Number(month) - 1]} ${Number(day)}`;
 }
 
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function noteDate(iso: string, locale: Locale): string {
+  const [year, month, day] = iso.split("-").map(Number);
+  if (!year || !month || !day) return iso;
+  if (locale === "zh") return `${year} 年 ${month} 月 ${day} 日`;
+  return `${day} ${MONTHS[month - 1]} ${year}`;
+}
+
+function reviewedNote(template: string, games: ChessReviewedGame[], locale: Locale): string {
+  const dates = games.map((game) => game.date).filter(Boolean).sort();
+  return template
+    .replaceAll("{count}", String(games.length))
+    .replaceAll("{from}", noteDate(dates[0] ?? "", locale))
+    .replaceAll("{to}", noteDate(dates[dates.length - 1] ?? "", locale));
+}
+
 function moveLabel(moveNumber: number, color: "w" | "b", san: string): string {
   return color === "w" ? `${moveNumber}. ${san}` : `${moveNumber}... ${san}`;
 }
@@ -189,7 +206,9 @@ export function ChessLibrary() {
         </div>
         {part === "games" ? (
           <>
-        <p className="mb-4 text-sm leading-relaxed text-dim">{t.project.reviewedGamesNote}</p>
+        <p className="mb-4 text-sm leading-relaxed text-dim">
+          {reviewedNote(t.project.reviewedGamesNote, chessGames, locale)}
+        </p>
         <div className="mb-2 flex flex-wrap gap-1">
           {GAME_CLOCKS.map((key) => (
             <button

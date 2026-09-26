@@ -226,7 +226,7 @@ const en: Dictionary = {
     chessBest: "Best",
     ratingChartNote: "Your Chess.com rating across the reviewed games.",
     reviewedGamesNote:
-      "374 public games from 25 Aug to 25 Sep 2026. Accuracy is a Stockfish estimate, not Chess.com Game Review.",
+      "{count} public games from {from} to {to}. Accuracy is a Stockfish estimate, not Chess.com Game Review.",
     boardMine: "My games",
     boardOwn: "Your game",
     boardMineNote: "Open a game from Games or Brilliant moves to analyze it here.",
@@ -391,7 +391,7 @@ const zh: Dictionary = {
     chessBest: "最高",
     ratingChartNote: "這些已分析棋局裡，你的 Chess.com 等級分變化。",
     reviewedGamesNote:
-      "2026 年 8 月 25 日至 9 月 25 日的 374 盤公開棋局。準確率是 Stockfish 的估計，不是 Chess.com 的 Game Review。",
+      "{from}至{to}的 {count} 盤公開棋局。準確率是 Stockfish 的估計，不是 Chess.com 的 Game Review。",
     boardMine: "我的棋局",
     boardOwn: "自己的棋局",
     boardMineNote: "從「棋局」或「精彩棋步」選一盤，在這裡分析。",

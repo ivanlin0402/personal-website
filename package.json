@@ -7,7 +7,8 @@
     "build": "node scripts/patch-f1-play.mjs && next build && node scripts/patch-f1-play.mjs",
     "start": "next start",
     "lint": "eslint",
-    "patch:f1": "node scripts/patch-f1-play.mjs"
+    "patch:f1": "node scripts/patch-f1-play.mjs",
+    "chess:update": "tsx scripts/update-chess.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.115.0",
@@ -24,6 +25,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }
