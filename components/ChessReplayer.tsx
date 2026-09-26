@@ -697,6 +697,7 @@ export function ChessReplayer({
           onJump={goTo}
         />
 
+        {pairs.length > 0 ? (
         <ol className="max-h-[32rem] overflow-y-auto rounded-xl border border-border bg-card p-3 text-sm">
           {pairs.map((pair) => (
             <li key={pair.number} className="grid grid-cols-[2rem_1fr_1fr] gap-2 py-0.5">
@@ -736,6 +737,7 @@ export function ChessReplayer({
             </li>
           ))}
         </ol>
+        ) : null}
 
         <label className="block">
           <span className="mb-2 block text-[13px] font-medium text-dim">
