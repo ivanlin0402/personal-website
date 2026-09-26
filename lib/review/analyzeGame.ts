@@ -72,17 +72,24 @@ function uciToMove(uci: string): { from: string; to: string; promotion?: string 
   return { from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] };
 }
 
+function tryMove(chess: Chess, uci: string) {
+  try {
+    return chess.move(uciToMove(uci));
+  } catch {
+    return null;
+  }
+}
+
 function sanFor(fen: string, uci: string): string {
   const chess = new Chess(fen);
-  const played = chess.move(uciToMove(uci));
-  return played?.san ?? uci;
+  return tryMove(chess, uci)?.san ?? uci;
 }
 
 function sanLine(fen: string, pv: string[], limit: number): string[] {
   const chess = new Chess(fen);
   const notes: string[] = [];
   for (const uci of pv.slice(0, limit)) {
-    const played = chess.move(uciToMove(uci));
+    const played = tryMove(chess, uci);
     if (!played) break;
     notes.push(played.san);
   }
@@ -117,13 +124,22 @@ export function capturesFreePiece(fen: string, uci: string): boolean {
   const mover = chess.get(from as Square);
   if (!victim || !mover || victim.type === "p" || victim.type === "k") return false;
   if (chess.isAttacked(to as Square, victim.color)) return false;
-  const played = chess.move({ from, to, promotion });
+  let played = null;
+  try {
+    played = chess.move({ from, to, promotion });
+  } catch {
+    return false;
+  }
   return Boolean(played?.captured);
 }
 
 export function hungQueen(fen: string, move: Move): boolean {
   const chess = new Chess(fen);
-  if (!chess.move({ from: move.from, to: move.to, promotion: move.promotion })) return false;
+  try {
+    chess.move({ from: move.from, to: move.to, promotion: move.promotion });
+  } catch {
+    return false;
+  }
   const squares = chess.board().flatMap((rank, rankIndex) =>
     rank.flatMap((piece, fileIndex) => {
       if (!piece || piece.color !== move.color || piece.type !== "q") return [];

@@ -327,8 +327,9 @@ export function ChessReplayer({
         { whiteRating: game.whiteRating, blackRating: game.blackRating },
       );
       if (!cancelRef.current && runId.current === id) setReview(result);
-    } catch {
-      if (!cancelRef.current && runId.current === id) setReviewFailed(true);
+    } catch (error) {
+      const cancelled = error instanceof Error && error.message === "cancelled";
+      if (!cancelled && !cancelRef.current && runId.current === id) setReviewFailed(true);
     } finally {
       if (runId.current === id) {
         setRunning(false);
@@ -427,8 +428,8 @@ export function ChessReplayer({
 
   return (
     <>
-    <div className="grid w-full items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(17.5rem,22rem)]">
-      <div className="min-w-0">
+    <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,38rem)_minmax(18rem,1fr)]">
+      <div className="min-w-0 w-full max-w-[min(38rem,calc(100dvh-8.5rem))] lg:sticky lg:top-[4.5rem] lg:z-10 lg:self-start">
         <div className="flex items-stretch gap-2">
           {shownEval ? (
             <div className="flex w-9 shrink-0 flex-col items-center py-3">

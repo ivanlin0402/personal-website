@@ -115,7 +115,11 @@ export function openingBookLines(): string[] {
 export function isBookMove(priorSans: string[], san: string): boolean {
   const chess = new Chess();
   for (const earlier of priorSans) {
-    if (!chess.move(earlier)) return false;
+    try {
+      if (!chess.move(earlier)) return false;
+    } catch {
+      return false;
+    }
   }
   return BOOK.get(positionKey(chess))?.has(san) ?? false;
 }

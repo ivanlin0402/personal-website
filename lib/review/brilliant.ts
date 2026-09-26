@@ -74,7 +74,12 @@ export function detectSacrificeCandidate(input: {
   const opponent = input.playerColor === "w" ? "b" : "w";
   const opponentBefore = materialTotal(chess, opponent);
   const queensBefore = queenCount(chess, opponent);
-  const played = chess.move(first);
+  let played;
+  try {
+    played = chess.move(first);
+  } catch {
+    played = null;
+  }
   if (!played) return { ...empty, materialBefore };
   const materialImmediatelyAfter = materialTotal(chess, input.playerColor);
   const sequence = [played.san];
@@ -104,7 +109,12 @@ export function detectSacrificeCandidate(input: {
     const mover = chess.get(step.from as Square);
     const movingOurs = mover?.color === input.playerColor;
     if (movingOurs && step.from === followedSquare) followedSquare = step.to;
-    const next = chess.move(step);
+    let next;
+    try {
+      next = chess.move(step);
+    } catch {
+      next = null;
+    }
     if (!next) break;
     sequence.push(next.san);
     // Later quiet moves do not undo a capture that already happened on this line.
