@@ -1,22 +1,24 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Chess } from "chess.js";
 import { ChessReplayer } from "@/components/ChessReplayer";
 import { useLanguage } from "@/components/LanguageProvider";
 import type { Locale } from "@/lib/i18n/config";
 import {
-  chessBrilliants,
   chessGames,
   chessRatings,
   type ChessReviewedGame,
   type ChessTimeClass,
 } from "@/data/chess-review";
 
+const CHESS_USER = "yenchenglin";
 const CLOCKS: ChessTimeClass[] = ["bullet", "blitz", "rapid", "daily"];
+const GAME_CLOCKS: ChessTimeClass[] = ["rapid", "blitz", "bullet", "daily"];
 
 const CLOCK_LABEL: Record<Locale, Record<ChessTimeClass, string>> = {
   en: { bullet: "Bullet", blitz: "Blitz", rapid: "Rapid", daily: "Daily" },
-  zh: { bullet: "子彈棋", blitz: "快棋", rapid: "快速棋", daily: "通訊棋" },
+  zh: { bullet: "子彈棋", blitz: "快棋", rapid: "中速棋", daily: "通訊棋" },
 };
 
 function formatDate(date: string, locale: Locale): string {
@@ -28,6 +30,44 @@ function formatDate(date: string, locale: Locale): string {
 
 function moveLabel(moveNumber: number, color: "w" | "b", san: string): string {
   return color === "w" ? `${moveNumber}. ${san}` : `${moveNumber}... ${san}`;
+}
+
+type BrilliantInGame = {
+  ply: number;
+  san: string;
+  color: "w" | "b";
+  moveNumber: number;
+};
+
+function brilliantGames() {
+  const rows: Array<{ game: ChessReviewedGame; moves: BrilliantInGame[] }> = [];
+  for (const game of chessGames) {
+    const marks = game.marks ?? "";
+    if (!marks.includes("R")) continue;
+    const chess = new Chess();
+    try {
+      chess.loadPgn(game.pgn);
+    } catch {
+      continue;
+    }
+    const headers = chess.header();
+    const userColor = headers.White === CHESS_USER ? "w" : headers.Black === CHESS_USER ? "b" : null;
+    if (!userColor) continue;
+    const history = chess.history({ verbose: true });
+    const moves: BrilliantInGame[] = [];
+    for (let index = 0; index < history.length; index += 1) {
+      if (marks[index] !== "R" || history[index].color !== userColor) continue;
+      moves.push({
+        ply: index + 1,
+        san: history[index].san,
+        color: history[index].color,
+        moveNumber: Math.floor(index / 2) + 1,
+      });
+    }
+    if (moves.length > 0) rows.push({ game, moves });
+  }
+  rows.sort((a, b) => b.moves.length - a.moves.length || b.game.endTime - a.game.endTime);
+  return rows;
 }
 
 function RatingChart({ games }: { games: ChessReviewedGame[] }) {
@@ -60,12 +100,13 @@ export function ChessLibrary() {
   const [boardUrl, setBoardUrl] = useState<string | null>(null);
   const [boardMarks, setBoardMarks] = useState("");
   const [sort, setSort] = useState<"time" | "accuracy">("time");
+  const [clock, setClock] = useState<ChessTimeClass>("rapid");
   const [loadedPgn, setLoadedPgn] = useState<string | undefined>();
   const [loadedPly, setLoadedPly] = useState(0);
   const [loadToken, setLoadToken] = useState(0);
 
   const sortedGames = useMemo(() => {
-    const next = chessGames.slice();
+    const next = chessGames.filter((game) => game.timeClass === clock);
     if (sort === "accuracy") {
       next.sort((a, b) => {
         const sinkA = a.resigned && a.moveCount < 20 ? 1 : 0;
@@ -77,7 +118,9 @@ export function ChessLibrary() {
       next.sort((a, b) => b.endTime - a.endTime);
     }
     return next;
-  }, [sort]);
+  }, [sort, clock]);
+
+  const sortedBrilliantGames = useMemo(() => brilliantGames(), []);
 
   const gamesByClass = useMemo(() => {
     const grouped = {
@@ -115,6 +158,13 @@ export function ChessLibrary() {
         : "border-transparent text-dim hover:text-muted"
     }`;
 
+  const smallChoiceClass = (active: boolean) =>
+    `rounded-md border px-2 py-0.5 text-[12px] font-medium transition-colors ${
+      active
+        ? "border-border-hover bg-card text-foreground"
+        : "border-transparent text-dim hover:text-muted"
+    }`;
+
   return (
     <>
       <section className="border-b border-border py-8">
@@ -140,6 +190,18 @@ export function ChessLibrary() {
         {part === "games" ? (
           <>
         <p className="mb-4 text-sm leading-relaxed text-dim">{t.project.reviewedGamesNote}</p>
+        <div className="mb-2 flex flex-wrap gap-1">
+          {GAME_CLOCKS.map((key) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setClock(key)}
+              className={smallChoiceClass(clock === key)}
+            >
+              {CLOCK_LABEL[locale][key]}
+            </button>
+          ))}
+        </div>
         <div className="mb-4 flex flex-wrap items-center gap-2">
           <span className="text-[13px] text-dim">{t.project.sortBy}</span>
           {(["time", "accuracy"] as const).map((key) => (
@@ -210,33 +272,34 @@ export function ChessLibrary() {
           <>
         <p className="mb-4 text-sm leading-relaxed text-dim">{t.project.brilliantNote}</p>
         <ol className="divide-y divide-border rounded-xl border border-border">
-          {chessBrilliants.map((move, index) => (
-            <li key={move.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+          {sortedBrilliantGames.map((row, index) => (
+            <li key={row.game.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
               <div>
                 <p className="font-heading text-sm font-semibold text-foreground">
-                  {index + 1}. {moveLabel(move.moveNumber, move.color, move.san)}
-                  <span className="ml-2 font-sans text-[13px] font-medium text-accent">
-                    +{move.benefit.toFixed(1)}
-                  </span>
+                  {index + 1}.{" "}
+                  <span className="text-[#00c2d1]">{row.moves.length} !!</span>
+                </p>
+                <p className="mt-1 text-sm text-foreground">
+                  {row.moves.map((move) => moveLabel(move.moveNumber, move.color, move.san)).join(" · ")}
                 </p>
                 <p className="mt-1 text-sm text-muted">
-                  {formatDate(move.date, locale)}
+                  {formatDate(row.game.date, locale)}
                   {" · "}
-                  {CLOCK_LABEL[locale][move.timeClass]}
+                  {CLOCK_LABEL[locale][row.game.timeClass]}
                   {" · "}
-                  {move.opponent}
+                  {row.game.opponent}
                 </p>
               </div>
               <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  onClick={() => openGame(move.gameId, move.ply)}
+                  onClick={() => openGame(row.game.id, row.moves[0]?.ply ?? 0)}
                   className="h-9 rounded-lg border border-border px-3 text-[13px] font-medium text-foreground transition-colors hover:bg-card"
                 >
                   {t.project.viewGame}
                 </button>
                 <a
-                  href={move.url}
+                  href={row.game.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[13px] text-dim hover:text-foreground"

@@ -1,8 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Chess, type Move, type PieceSymbol } from "chess.js";
+import { GameReviewPanel } from "@/components/GameReviewPanel";
 import { useLanguage } from "@/components/LanguageProvider";
+import { StockfishClient } from "@/lib/engine/stockfishClient";
+import { analyzeGame } from "@/lib/review/analyzeGame";
+import { formatWhiteEval, whiteShare } from "@/lib/review/evaluation";
+import { CLASS_MARK, type GameReview, type MoveReview } from "@/lib/review/reviewTypes";
 
 const EXAMPLE_PGN = `[Event "Example"]
 [White "Example"]
@@ -28,21 +33,30 @@ type ParsedGame = {
   moves: Move[];
   white: string;
   black: string;
+  whiteRating: number | null;
+  blackRating: number | null;
   error: string | null;
 };
+
+function ratingHeader(value: string | undefined): number | null {
+  const rating = Number(value);
+  return Number.isFinite(rating) && rating > 0 ? Math.round(rating) : null;
+}
 
 function parsePgn(pgn: string): ParsedGame {
   const chess = new Chess();
   try {
     chess.loadPgn(pgn);
   } catch {
-    return { moves: [], white: "", black: "", error: "invalid" };
+    return { moves: [], white: "", black: "", whiteRating: null, blackRating: null, error: "invalid" };
   }
   const headers = chess.getHeaders();
   return {
     moves: chess.history({ verbose: true }),
     white: headers.White ?? "",
     black: headers.Black ?? "",
+    whiteRating: ratingHeader(headers.WhiteElo),
+    blackRating: ratingHeader(headers.BlackElo),
     error: null,
   };
 }
@@ -140,12 +154,20 @@ export function ChessReplayer({
   loadToken = 0,
   marks = "",
 }: ChessReplayerProps) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [draft, setDraft] = useState(EXAMPLE_PGN);
   const [pgn, setPgn] = useState(EXAMPLE_PGN);
   const [ply, setPly] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [loadError, setLoadError] = useState(false);
+  const [review, setReview] = useState<GameReview | null>(null);
+  const [liveMoves, setLiveMoves] = useState<MoveReview[]>([]);
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+  const [running, setRunning] = useState(false);
+  const [reviewFailed, setReviewFailed] = useState(false);
+  const engineRef = useRef<StockfishClient | null>(null);
+  const cancelRef = useRef(false);
+  const runId = useRef(0);
 
   useEffect(() => {
     if (!loadedPgn || loadToken === 0) return;
@@ -155,6 +177,23 @@ export function ChessReplayer({
     setPlaying(false);
     setLoadError(false);
   }, [loadedPgn, loadedPly, loadToken]);
+
+  useEffect(() => {
+    cancelRef.current = true;
+    runId.current += 1;
+    engineRef.current?.stop();
+    setReview(null);
+    setLiveMoves([]);
+    setProgress(null);
+    setRunning(false);
+    setReviewFailed(false);
+  }, [pgn]);
+
+  useEffect(() => {
+    return () => {
+      engineRef.current?.quit();
+    };
+  }, []);
 
   const game = useMemo(() => parsePgn(pgn), [pgn]);
   const total = game.moves.length;
@@ -169,8 +208,24 @@ export function ChessReplayer({
   }, [game.moves, safePly]);
 
   const lastMove = safePly > 0 ? game.moves[safePly - 1] : null;
-  const moveMark =
-    pgn === loadedPgn && safePly > 0 ? marks[safePly - 1] ?? "" : "";
+  const liveMove = liveMoves[safePly - 1];
+  const moveMark = liveMove
+    ? CLASS_MARK[liveMove.classification]
+    : liveMoves.length === 0 && pgn === loadedPgn && safePly > 0
+      ? (marks[safePly - 1] ?? "")
+      : "";
+  const shownEval = liveMove
+    ? liveMove.evaluationAfter
+    : liveMoves[0] && safePly === 0
+      ? liveMoves[0].evaluationBefore
+      : null;
+  const showArrow =
+    liveMove != null &&
+    liveMove.bestUci !== liveMove.uci &&
+    (liveMove.classification === "inaccuracy" ||
+      liveMove.classification === "mistake" ||
+      liveMove.classification === "miss" ||
+      liveMove.classification === "blunder");
 
   useEffect(() => {
     if (!playing) return;
@@ -194,9 +249,59 @@ export function ChessReplayer({
     setPlaying(false);
   }
 
+  async function reviewCurrentGame() {
+    if (running || total === 0) return;
+    const id = ++runId.current;
+    cancelRef.current = false;
+    setReviewFailed(false);
+    setReview(null);
+    setLiveMoves([]);
+    setRunning(true);
+    setPlaying(false);
+    const client = engineRef.current ?? new StockfishClient();
+    engineRef.current = client;
+    try {
+      const result = await analyzeGame(
+        game.moves,
+        client,
+        (done, count, move, replace) => {
+          if (cancelRef.current || runId.current !== id) return;
+          setProgress({ done, total: count });
+          if (!move) return;
+          setLiveMoves((current) =>
+            replace ? current.map((item) => (item.ply === move.ply ? move : item)) : [...current, move],
+          );
+        },
+        () => cancelRef.current,
+        pgn === loadedPgn ? marks : "",
+        { whiteRating: game.whiteRating, blackRating: game.blackRating },
+      );
+      if (!cancelRef.current && runId.current === id) setReview(result);
+    } catch {
+      if (!cancelRef.current && runId.current === id) setReviewFailed(true);
+    } finally {
+      if (runId.current === id) {
+        setRunning(false);
+        setProgress(null);
+      }
+    }
+  }
+
+  function cancelReview() {
+    cancelRef.current = true;
+    engineRef.current?.stop();
+  }
+
   function goTo(next: number) {
     setPlaying(false);
     setPly(Math.min(total, Math.max(0, next)));
+  }
+
+  function markFor(index: number): string {
+    const live = liveMoves[index];
+    if (live) return CLASS_MARK[live.classification];
+    if (liveMoves.length === 0 && pgn === loadedPgn) return marks[index] ?? "";
+    return "";
   }
 
   const pairs: Array<{ number: number; white?: Move; black?: Move }> = [];
@@ -211,8 +316,17 @@ export function ChessReplayer({
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,46rem)_minmax(16rem,22rem)]">
       <div>
-        <div className="overflow-hidden rounded-xl border border-[#2c3d55] bg-[#121a28] p-3 sm:p-4">
-          <div className="grid grid-cols-8 overflow-hidden rounded-md">
+        <div className="flex items-stretch gap-2">
+          {shownEval ? (
+            <div className="flex w-9 shrink-0 flex-col items-center py-3">
+              <span className="mb-1 text-[11px] font-medium text-foreground">{formatWhiteEval(shownEval)}</span>
+              <div className="relative w-2.5 flex-1 overflow-hidden rounded-full bg-[#3a2a1c]" title={formatWhiteEval(shownEval)}>
+                <div className="absolute inset-x-0 bottom-0 bg-[#f4efe4]" style={{ height: `${whiteShare(shownEval)}%` }} />
+              </div>
+            </div>
+          ) : null}
+          <div className="relative min-w-0 flex-1 overflow-hidden rounded-xl border border-[#2c3d55] bg-[#121a28] p-3 sm:p-4">
+          <div className="relative grid grid-cols-8 overflow-hidden rounded-md">
             {board.map((rank, rankIndex) =>
               rank.map((piece, fileIndex) => {
                 const square = `${FILES[fileIndex]}${8 - rankIndex}`;
@@ -236,8 +350,8 @@ export function ChessReplayer({
                       <span
                         className={`chess-piece bg-clip-text font-heading leading-none text-transparent ${
                           piece.color === "w"
-                            ? "bg-gradient-to-br from-[#f8edd8] via-[#e2c396] to-[#c49662] [-webkit-text-stroke:1px_#6a4a28]"
-                            : "bg-gradient-to-br from-[#a86b3a] via-[#6b3e1c] to-[#4a2912] [-webkit-text-stroke:1px_#f0ddc0]"
+                            ? "bg-gradient-to-br from-[#ffffff] via-[#ffffff] to-[#f6f5f3] [-webkit-text-stroke:1px_#9aa3ad]"
+                            : "bg-gradient-to-br from-[#1c1c1c] via-[#050505] to-[#000000] [-webkit-text-stroke:1px_#c9ced6]"
                         }`}
                       >
                         {GLYPH[piece.type]}
@@ -270,7 +384,13 @@ export function ChessReplayer({
                 );
               }),
             )}
+            {showArrow && liveMove ? (
+              <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 8 8" aria-hidden="true">
+                <BestArrow uci={liveMove.bestUci} />
+              </svg>
+            ) : null}
           </div>
+        </div>
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -334,6 +454,30 @@ export function ChessReplayer({
           </p>
         </div>
 
+        <GameReviewPanel
+          locale={locale}
+          review={review}
+          move={liveMove ?? null}
+          progress={progress}
+          running={running}
+          failed={reviewFailed}
+          failedLabel={t.project.reviewFailed}
+          onReview={() => void reviewCurrentGame()}
+          onCancel={cancelReview}
+          reviewLabel={t.project.reviewGame}
+          cancelLabel={t.project.cancelReview}
+          analyzingLabel={t.project.analyzingGame}
+          accuracyLabel={t.project.engineAccuracy}
+          beforeLabel={t.project.evalBefore}
+          afterLabel={t.project.evalAfter}
+          bestLabel={t.project.bestMoveLabel}
+          bestLineLabel={t.project.bestLineLabel}
+          showLineLabel={t.project.showFullLine}
+          hideLineLabel={t.project.hideFullLine}
+          debugLabel={t.project.reviewDebug}
+          onJump={goTo}
+        />
+
         <ol className="max-h-[32rem] overflow-y-auto rounded-xl border border-border bg-card p-3 text-sm">
           {pairs.map((pair) => (
             <li key={pair.number} className="grid grid-cols-[2rem_1fr_1fr] gap-2 py-0.5">
@@ -349,6 +493,7 @@ export function ChessReplayer({
                   }`}
                 >
                   {pair.white.san}
+                  <MoveListMark code={markFor(pair.number * 2 - 2)} />
                 </button>
               ) : (
                 <span />
@@ -364,6 +509,7 @@ export function ChessReplayer({
                   }`}
                 >
                   {pair.black.san}
+                  <MoveListMark code={markFor(pair.number * 2 - 1)} />
                 </button>
               ) : (
                 <span />
@@ -401,4 +547,66 @@ export function ChessReplayer({
       </div>
     </div>
   );
+}
+
+const MARK_NAME: Record<string, string> = {
+  R: "Brilliant",
+  G: "Great",
+  S: "Best",
+  E: "Excellent",
+  C: "Good",
+  I: "Inaccuracy",
+  M: "Mistake",
+  X: "Miss",
+  B: "Blunder",
+  K: "Book",
+};
+
+function MoveListMark({ code }: { code: string }) {
+  const style = MOVE_MARK[code];
+  if (!style) return null;
+  return (
+    <span
+      title={MARK_NAME[code] ?? code}
+      className="ml-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none"
+      style={{ backgroundColor: style.color, color: style.ink }}
+    >
+      <span className="inline-flex h-2.5 w-2.5 items-center justify-center [&>svg]:h-2.5 [&>svg]:w-2.5">
+        <MarkGlyph code={code} />
+      </span>
+    </span>
+  );
+}
+
+function BestArrow({ uci }: { uci: string }) {
+  const from = squarePoint(uci.slice(0, 2));
+  const to = squarePoint(uci.slice(2, 4));
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const length = Math.hypot(dx, dy) || 1;
+  const end = { x: from.x + (dx / length) * (length - 0.45), y: from.y + (dy / length) * (length - 0.45) };
+  return (
+    <>
+      <defs>
+        <marker id="best-arrow" markerWidth="3" markerHeight="3" refX="1.4" refY="1.5" orient="auto">
+          <path d="M0 0 L3 1.5 L0 3 z" fill="#f0c329" />
+        </marker>
+      </defs>
+      <line
+        x1={from.x}
+        y1={from.y}
+        x2={end.x}
+        y2={end.y}
+        stroke="#f0c329"
+        strokeWidth="0.14"
+        markerEnd="url(#best-arrow)"
+      />
+    </>
+  );
+}
+
+function squarePoint(square: string): { x: number; y: number } {
+  const file = square.charCodeAt(0) - 97;
+  const rank = Number(square[1]);
+  return { x: file + 0.5, y: 8 - rank + 0.5 };
 }

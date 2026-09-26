@@ -96,6 +96,18 @@ export type Dictionary = {
     boardMine: string;
     boardOwn: string;
     boardMineNote: string;
+    reviewGame: string;
+    cancelReview: string;
+    analyzingGame: string;
+    reviewFailed: string;
+    engineAccuracy: string;
+    evalBefore: string;
+    evalAfter: string;
+    bestMoveLabel: string;
+    bestLineLabel: string;
+    showFullLine: string;
+    hideFullLine: string;
+    reviewDebug: string;
     github: string;
     demo: string;
     documentation: string;
@@ -203,8 +215,7 @@ const en: Dictionary = {
     showMoreGames: "Show more",
     chessBrilliants: "Brilliant moves",
     brilliantBenefit: "Effect",
-    brilliantNote:
-      "Sorted by how many winning-chance points the next-best move would have given away.",
+    brilliantNote: "Sorted by how many of your brilliant moves (!!) the game contains.",
     chessRatings: "Ratings",
     chessRecord: "Record",
     chessCurrent: "Current",
@@ -215,6 +226,18 @@ const en: Dictionary = {
     boardMine: "My games",
     boardOwn: "Your game",
     boardMineNote: "Open a game from Games or Brilliant moves to analyze it here.",
+    reviewGame: "Review game",
+    cancelReview: "Cancel",
+    analyzingGame: "Analyzing game...",
+    reviewFailed: "The engine could not review this game.",
+    engineAccuracy: "Accuracy",
+    evalBefore: "Before",
+    evalAfter: "After",
+    bestMoveLabel: "Best move",
+    bestLineLabel: "Best was",
+    showFullLine: "Show the line",
+    hideFullLine: "Shorter line",
+    reviewDebug: "Debug",
     github: "GitHub",
     demo: "Demo",
     documentation: "Documentation",
@@ -355,7 +378,7 @@ const zh: Dictionary = {
     showMoreGames: "顯示更多",
     chessBrilliants: "精彩棋步",
     brilliantBenefit: "影響",
-    brilliantNote: "依這步比次佳著法多保住多少勝算來排序。",
+    brilliantNote: "依你在這盤裡的精彩棋步（!!）數量排序，多的排前面。",
     chessRatings: "等級分",
     chessRecord: "戰績",
     chessCurrent: "目前",
@@ -366,6 +389,18 @@ const zh: Dictionary = {
     boardMine: "我的棋局",
     boardOwn: "自己的棋局",
     boardMineNote: "從「棋局」或「精彩棋步」選一盤，在這裡分析。",
+    reviewGame: "分析棋局",
+    cancelReview: "取消",
+    analyzingGame: "分析中…",
+    reviewFailed: "引擎沒辦法分析這盤棋。",
+    engineAccuracy: "準確率",
+    evalBefore: "之前",
+    evalAfter: "之後",
+    bestMoveLabel: "最佳著法",
+    bestLineLabel: "最佳繼續",
+    showFullLine: "展開變化",
+    hideFullLine: "收合變化",
+    reviewDebug: "除錯",
     github: "GitHub",
     demo: "示範",
     documentation: "文件",
