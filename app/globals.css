@@ -225,8 +225,13 @@ h4,
 }
 
 .chess-end--throne {
-  background: #2e7d32;
-  color: #f4efe4;
+  background: #2faf62;
+  color: #ffffff;
+}
+
+.chess-end--throne svg {
+  width: 74%;
+  height: 74%;
 }
 
 .chess-end--half {

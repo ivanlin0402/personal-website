@@ -188,7 +188,7 @@ function EndBadge({ kind, label }: { kind: EndSign; label: string }) {
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path
             fill="currentColor"
-            d="M4 4h3.2v6.2H5.2V20h13.6V10.2H16.8V4H20v7.4c0 1.3-1 2.4-2.3 2.4H15v6.2H9V13.8H6.3C5 13.8 4 12.7 4 11.4V4zm5 0h6v5.2H9V4z"
+            d="M3 17.6C3.4 13.8 5.2 8.2 7.6 8.1 8.8 8 9.3 10.8 9.7 12.6L12 3.2l2.3 9.4c.4-1.8.9-4.6 2.1-4.5 2.4.1 4.2 5.7 4.6 9.5H3z"
           />
         </svg>
       ) : null}
