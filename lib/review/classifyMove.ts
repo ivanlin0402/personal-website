@@ -101,7 +101,7 @@ function bucket(features: MoveFeatures): Classification {
  * expected-score loss, with a softer cap for book and equivalent opening moves.
  */
 export function classifyMove(features: MoveFeatures): Classification {
-  if (features.onlyLegalMove) return "best";
+  if (features.onlyLegalMove) return "forced";
   if (brilliantVerdict(features).accepted) return "brilliant";
   if (collapsed(features)) return "blunder";
   if (features.book) return "book";

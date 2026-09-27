@@ -27,7 +27,7 @@ export function explainMove(move: MoveReview, locale: Locale): string {
   const beforeMate = features.playerBefore.kind === "mate" ? features.playerBefore.mate : null;
 
   if (features.onlyLegalMove) {
-    return locale === "zh" ? "這是唯一的合法著法。" : "This was the only legal move.";
+    return locale === "zh" ? "被迫。這是唯一可以下的一步。" : "Forced. This was the only legal move.";
   }
 
   if (classification === "book") {

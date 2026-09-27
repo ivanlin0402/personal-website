@@ -60,6 +60,7 @@ function emptySummary(): ReviewSummary {
     great: 0,
     best: 0,
     book: 0,
+    forced: 0,
     excellent: 0,
     good: 0,
     inaccuracy: 0,

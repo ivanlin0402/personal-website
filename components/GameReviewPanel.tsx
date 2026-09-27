@@ -13,6 +13,7 @@ const LABEL: Record<Locale, Record<(typeof CLASSIFICATIONS)[number], string>> = 
     great: "Great",
     best: "Best",
     book: "Book",
+    forced: "Forced",
     excellent: "Excellent",
     good: "Good",
     inaccuracy: "Inaccuracy",
@@ -25,6 +26,7 @@ const LABEL: Record<Locale, Record<(typeof CLASSIFICATIONS)[number], string>> = 
     great: "好棋",
     best: "最佳",
     book: "開局書",
+    forced: "被迫",
     excellent: "優秀",
     good: "好",
     inaccuracy: "不準確",
@@ -104,7 +106,7 @@ export function GameReviewPanel({
   const showBestLine = move != null && move.bestUci !== move.uci && line.length > 0;
 
   return (
-    <div className="rounded-xl border border-border bg-card p-3">
+    <div className="w-full min-w-0 rounded-xl border border-border bg-card p-3">
       <div className="flex flex-wrap items-center gap-2">
         {running ? (
           <button
@@ -143,49 +145,65 @@ export function GameReviewPanel({
       </div>
 
       {move ? (
-        <div className="mt-3">
-          <p className="font-heading text-base font-semibold text-foreground">
-            {move.color === "white" ? `${move.moveNumber}. ${move.san}` : `${move.moveNumber}... ${move.san}`}
-          </p>
-          <p className="mt-1 text-sm font-medium text-accent">{classLabel(locale, move.classification)}</p>
-          <p className="mt-1 text-[13px] text-muted">
-            {accuracyLabel}: {formatAccuracy(move.moveAccuracy)}
-          </p>
-          <p className="mt-2 text-[13px] text-muted">
-            {beforeLabel}: {formatWhiteEval(move.evaluationBefore)}
-            {" · "}
-            {afterLabel}: {formatWhiteEval(move.evaluationAfter)}
-          </p>
-          <p className="mt-1 text-[13px] text-muted">
-            {bestLabel}: {move.bestMove}
-          </p>
-          {showBestLine ? (
-            <div className="mt-2">
-              <p className="text-[13px] leading-relaxed text-foreground">
-                {bestLineLabel}: {visibleLine.join(" ")}
+        <div className="mt-3 min-h-48 w-full min-w-0">
+              <p className="font-heading text-base font-semibold text-foreground">
+                {move.color === "white" ? `${move.moveNumber}. ${move.san}` : `${move.moveNumber}... ${move.san}`}
               </p>
-              {line.length > preview ? (
-                <button
-                  type="button"
-                  onClick={() => setExpandedPly(showFullLine ? null : move.ply)}
-                  className="mt-1 text-[12px] text-dim hover:text-foreground"
-                >
-                  {showFullLine ? hideLineLabel : showLineLabel}
-                </button>
+              <p className="mt-1 flex items-center gap-1.5 text-sm font-medium text-accent">
+                {move.classification === "forced" ? (
+                  <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#8e97a3] text-white">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-2.5 w-2.5">
+                      <path
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="3.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M4 12h14M13 6l6 6-6 6"
+                      />
+                    </svg>
+                  </span>
+                ) : null}
+                {classLabel(locale, move.classification)}
+              </p>
+              <p className="mt-1 text-[13px] text-muted">
+                {accuracyLabel}: {formatAccuracy(move.moveAccuracy)}
+              </p>
+              <p className="mt-2 text-[13px] text-muted">
+                {beforeLabel}: {formatWhiteEval(move.evaluationBefore)}
+                {" · "}
+                {afterLabel}: {formatWhiteEval(move.evaluationAfter)}
+              </p>
+              <p className="mt-1 text-[13px] text-muted">
+                {bestLabel}: {move.bestMove}
+              </p>
+              {showBestLine ? (
+                <div className="mt-2">
+                  <p className="break-words text-[13px] leading-relaxed text-foreground">
+                    {bestLineLabel}: {visibleLine.join(" ")}
+                  </p>
+                  {line.length > preview ? (
+                    <button
+                      type="button"
+                      onClick={() => setExpandedPly(showFullLine ? null : move.ply)}
+                      className="mt-1 text-[12px] text-dim hover:text-foreground"
+                    >
+                      {showFullLine ? hideLineLabel : showLineLabel}
+                    </button>
+                  ) : null}
+                </div>
               ) : null}
-            </div>
-          ) : null}
-          <p className="mt-2 text-sm leading-relaxed text-foreground">{explainMove(move, locale)}</p>
-          {debug ? <DebugBlock move={move} /> : null}
+              <p className="mt-2 break-words text-sm leading-relaxed text-foreground">{explainMove(move, locale)}</p>
+              {debug ? <DebugBlock move={move} /> : null}
         </div>
       ) : null}
 
-      {review && !running && review.moves.length > 1 ? (
+      {review && !running && review.moves.length > 0 ? (
         <EvalGraph moves={review.moves} selectedPly={move?.ply ?? review.moves.length} onSelect={onJump} />
       ) : null}
 
       {review && !running ? (
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="mt-4 grid w-full min-w-0 gap-3 sm:grid-cols-2">
           {(["white", "black"] as const).map((color) => (
             <div key={color}>
               <p className="text-[13px] font-semibold text-foreground">
@@ -195,7 +213,7 @@ export function GameReviewPanel({
                 {accuracyLabel}: {formatAccuracy(color === "white" ? review.whiteAccuracy : review.blackAccuracy)}
               </p>
               <ul className="mt-1 space-y-0.5 text-[12px] text-dim">
-                {CLASSIFICATIONS.map((key) => (
+                {CLASSIFICATIONS.filter((key) => key !== "forced").map((key) => (
                   <li key={key} className="flex justify-between gap-3">
                     <span>{classLabel(locale, key)}</span>
                     <span>{review[color][key]}</span>

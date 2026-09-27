@@ -227,7 +227,7 @@ expectClass(
   "best",
 );
 expectClass(
-  "only legal move is not brilliant",
+  "only legal move is forced",
   features({
     onlyLegalMove: true,
     sacrifice: "piece",
@@ -235,7 +235,7 @@ expectClass(
     sacrificedPiece: "q",
     secondWinChance: 0.1,
   }),
-  "best",
+  "forced",
 );
 expectClass(
   "missed free piece that stays near the alternative",

@@ -5,6 +5,7 @@ export type Classification =
   | "great"
   | "best"
   | "book"
+  | "forced"
   | "excellent"
   | "good"
   | "inaccuracy"
@@ -136,6 +137,7 @@ export const CLASSIFICATIONS: Classification[] = [
   "great",
   "best",
   "book",
+  "forced",
   "excellent",
   "good",
   "inaccuracy",
@@ -149,6 +151,7 @@ export const CLASS_MARK: Record<Classification, string> = {
   great: "G",
   best: "S",
   book: "K",
+  forced: "F",
   excellent: "E",
   good: "C",
   inaccuracy: "I",

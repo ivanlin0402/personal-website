@@ -106,6 +106,7 @@ const MOVE_MARK: Record<string, { text?: string; color: string; ink: string }> =
   X: { color: "#e23b3b", ink: "#ffffff" },
   B: { text: "??", color: "#e23b3b", ink: "#ffffff" },
   K: { color: "#8b5a2b", ink: "#fff6ea" },
+  F: { color: "#8e97a3", ink: "#ffffff" },
 };
 
 function MarkGlyph({ code }: { code: string }) {
@@ -155,6 +156,20 @@ function MarkGlyph({ code }: { code: string }) {
           d="M19.8 5.2C19.8 4 18.8 3 17.6 3H12v16.2h5.8a2 2 0 0 0 2-2V5.2z"
         />
         <path fill="#5c3312" d="M11.15 3.2h1.7v15.8h-1.7z" />
+      </svg>
+    );
+  }
+  if (code === "F") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="3.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M4 12h14M13 6l6 6-6 6"
+        />
       </svg>
     );
   }
@@ -210,7 +225,7 @@ type ChessReplayerProps = {
   loadToken?: number;
   /** The loaded game ended because a player resigned. */
   resigned?: boolean;
-  /** One letter per ply: R !! G ! S best E excellent C good I !? M ? X miss B ?? K book. */
+  /** One letter per ply: R !! G ! S best E excellent C good I !? M ? X miss B ?? K book F forced. */
   marks?: string;
 };
 
@@ -238,6 +253,7 @@ export function ChessReplayer({
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [running, setRunning] = useState(false);
   const [reviewFailed, setReviewFailed] = useState(false);
+  const [awaitingReview, setAwaitingReview] = useState(false);
   const engineRef = useRef<StockfishClient | null>(null);
   const cancelRef = useRef(false);
   const searchingRef = useRef(false);
@@ -310,6 +326,8 @@ export function ChessReplayer({
     if (wonSquare) endSigns.set(wonSquare, "throne");
   }
   const liveMove = liveMoves.find((move) => move.ply === safePly) ?? null;
+  const priorReview = liveMoves.filter((move) => move.ply < safePly).at(-1) ?? null;
+  const panelMove = liveMove ?? (awaitingReview ? priorReview : null);
   function theoryMark(index: number): string {
     const san = game.moves[index]?.san;
     if (!san) return "";
@@ -327,9 +345,11 @@ export function ChessReplayer({
   const openingReview = liveMoves.find((move) => move.ply === 1);
   const shownEval = liveMove
     ? liveMove.evaluationAfter
-    : openingReview && safePly === 0
-      ? openingReview.evaluationBefore
-      : null;
+    : awaitingReview && priorReview
+      ? priorReview.evaluationAfter
+      : openingReview && safePly === 0
+        ? openingReview.evaluationBefore
+        : null;
   const showArrow =
     liveMove != null &&
     liveMove.bestUci !== liveMove.uci &&
@@ -365,6 +385,7 @@ export function ChessReplayer({
     setProgress(null);
     setRunning(false);
     setReviewFailed(false);
+    setAwaitingReview(false);
   }
 
   function mergeLive(move: MoveReview, line: Move[]) {
@@ -405,6 +426,7 @@ export function ChessReplayer({
     setReviewFailed(false);
     setRunning(false);
     setProgress(null);
+    setAwaitingReview(true);
     setPlaying(false);
     const client = engineRef.current ?? new StockfishClient();
     engineRef.current = client;
@@ -422,7 +444,10 @@ export function ChessReplayer({
       const halted = error instanceof Error && error.message === "cancelled";
       if (!halted && runId.current === id) setReviewFailed(true);
     } finally {
-      if (runId.current === id) searchingRef.current = false;
+      if (runId.current === id) {
+        searchingRef.current = false;
+        setAwaitingReview(false);
+      }
     }
   }
 
@@ -595,14 +620,12 @@ export function ChessReplayer({
     <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,38rem)_minmax(18rem,1fr)]">
       <div className="min-w-0 w-full max-w-[min(38rem,calc(100dvh-8.5rem))] lg:sticky lg:top-[4.5rem] lg:z-10 lg:self-start">
         <div className="flex items-stretch gap-2">
-          {shownEval ? (
-            <div className="flex w-9 shrink-0 flex-col items-center py-3">
-              <span className="mb-1 text-[11px] font-medium text-foreground">{formatWhiteEval(shownEval)}</span>
-              <div className="relative w-2.5 flex-1 overflow-hidden rounded-full bg-[#3a2a1c]" title={formatWhiteEval(shownEval)}>
-                <div className="absolute inset-x-0 bottom-0 bg-[#f4efe4]" style={{ height: `${whiteShare(shownEval)}%` }} />
-              </div>
+          <div className={`flex w-9 shrink-0 flex-col items-center py-3 ${shownEval ? "" : "invisible"}`} aria-hidden={shownEval ? undefined : true}>
+            <span className="mb-1 text-[11px] font-medium text-foreground">{shownEval ? formatWhiteEval(shownEval) : "0.0"}</span>
+            <div className="relative w-2.5 flex-1 overflow-hidden rounded-full bg-[#3a2a1c]" title={shownEval ? formatWhiteEval(shownEval) : undefined}>
+              <div className="absolute inset-x-0 bottom-0 bg-[#f4efe4]" style={{ height: `${shownEval ? whiteShare(shownEval) : 50}%` }} />
             </div>
-          ) : null}
+          </div>
           <div className="relative min-w-0 flex-1 overflow-hidden rounded-xl border border-[#2c3d55] bg-[#121a28] p-3 sm:p-4">
           <div className="relative grid grid-cols-8 overflow-hidden rounded-md">
             {board.map((rank, rankIndex) =>
@@ -762,7 +785,7 @@ export function ChessReplayer({
         </div>
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex w-full min-w-0 flex-col gap-4">
         <div>
           <p className="text-sm text-foreground">
             <span className="text-dim">{t.project.white}</span>{" "}
@@ -777,7 +800,7 @@ export function ChessReplayer({
         <GameReviewPanel
           locale={locale}
           review={review}
-          move={liveMove ?? null}
+          move={panelMove}
           progress={progress}
           running={running}
           failed={reviewFailed}
@@ -893,9 +916,11 @@ const MARK_NAME: Record<string, string> = {
   X: "Miss",
   B: "Blunder",
   K: "Book",
+  F: "Forced",
 };
 
 function MoveListMark({ code }: { code: string }) {
+  if (code === "F") return null;
   const style = MOVE_MARK[code];
   if (!style) return null;
   return (
