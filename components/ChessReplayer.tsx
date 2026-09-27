@@ -5,7 +5,8 @@ import { Chess, type Move, type PieceSymbol, type Square } from "chess.js";
 import { GameReviewPanel } from "@/components/GameReviewPanel";
 import { useLanguage } from "@/components/LanguageProvider";
 import { StockfishClient } from "@/lib/engine/stockfishClient";
-import { analyzeGame } from "@/lib/review/analyzeGame";
+import { analyzeGame, analyzeOneMove, gameReviewFromMoves } from "@/lib/review/analyzeGame";
+import type { ReviewPlayers } from "@/lib/review/analyzeGame";
 import { formatWhiteEval, whiteShare } from "@/lib/review/evaluation";
 import { CLASS_MARK, type GameReview, type MoveReview } from "@/lib/review/reviewTypes";
 import { isBookMove } from "@/lib/review/openingBook";
@@ -232,11 +233,13 @@ export function ChessReplayer({
   const [loadError, setLoadError] = useState(false);
   const [review, setReview] = useState<GameReview | null>(null);
   const [liveMoves, setLiveMoves] = useState<MoveReview[]>([]);
+  const liveMovesRef = useRef<MoveReview[]>([]);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [running, setRunning] = useState(false);
   const [reviewFailed, setReviewFailed] = useState(false);
   const engineRef = useRef<StockfishClient | null>(null);
   const cancelRef = useRef(false);
+  const searchingRef = useRef(false);
   const runId = useRef(0);
 
   useEffect(() => {
@@ -246,22 +249,15 @@ export function ChessReplayer({
     setPly(loadedPly);
     setPlaying(false);
     setLoadError(false);
+    resetReview();
   }, [loadedPgn, loadedPly, loadToken]);
 
   useEffect(() => {
-    cancelRef.current = true;
-    runId.current += 1;
-    engineRef.current?.stop();
-    setReview(null);
-    setLiveMoves([]);
-    setProgress(null);
-    setRunning(false);
-    setReviewFailed(false);
-  }, [pgn]);
-
-  useEffect(() => {
+    const client = new StockfishClient();
+    engineRef.current = client;
+    void client.warm().catch(() => undefined);
     return () => {
-      engineRef.current?.quit();
+      client.quit();
     };
   }, []);
 
@@ -350,6 +346,37 @@ export function ChessReplayer({
     return () => window.clearTimeout(timer);
   }, [playing, safePly, total]);
 
+  function haltSearch() {
+    if (!searchingRef.current) return;
+    cancelRef.current = true;
+    engineRef.current?.stop();
+    cancelRef.current = false;
+  }
+
+  function resetReview() {
+    runId.current += 1;
+    haltSearch();
+    searchingRef.current = false;
+    liveMovesRef.current = [];
+    setReview(null);
+    setLiveMoves([]);
+    setProgress(null);
+    setRunning(false);
+    setReviewFailed(false);
+  }
+
+  function mergeLive(move: MoveReview, line: Move[]) {
+    const next = liveMovesRef.current.filter((item) => {
+      const prior = line[item.ply - 1];
+      return item.ply !== move.ply && prior != null && prior.san === item.san;
+    });
+    next.push(move);
+    next.sort((left, right) => left.ply - right.ply);
+    liveMovesRef.current = next;
+    setLiveMoves(next);
+    setReview(gameReviewFromMoves(next));
+  }
+
   function loadDraft() {
     const next = parsePgn(draft);
     if (next.error) {
@@ -360,19 +387,65 @@ export function ChessReplayer({
     setPgn(draft);
     setPly(0);
     setPlaying(false);
+    resetReview();
+  }
+
+  async function reviewJustPlayed(moves: Move[], index: number, ratings: ReviewPlayers) {
+    const id = ++runId.current;
+    haltSearch();
+    const kept = liveMovesRef.current.filter((move) => {
+      const prior = moves[move.ply - 1];
+      return prior != null && move.ply - 1 < index && prior.san === move.san;
+    });
+    liveMovesRef.current = kept;
+    setLiveMoves(kept);
+    setReview(kept.length > 0 ? gameReviewFromMoves(kept) : null);
+    setReviewFailed(false);
+    setRunning(true);
+    setProgress({ done: 0, total: 1 });
+    setPlaying(false);
+    const client = engineRef.current ?? new StockfishClient();
+    engineRef.current = client;
+    searchingRef.current = true;
+    const stopped = () => cancelRef.current || runId.current !== id;
+    const publish = (move: MoveReview) => {
+      if (stopped()) return;
+      mergeLive(move, moves);
+      setProgress(null);
+    };
+    try {
+      await analyzeOneMove(moves, index, client, stopped, publish, "", ratings);
+      if (stopped()) return;
+      for (let hole = 0; hole < moves.length; hole += 1) {
+        if (stopped()) return;
+        if (liveMovesRef.current.some((move) => move.ply - 1 === hole)) continue;
+        await analyzeOneMove(moves, hole, client, stopped, publish, "", ratings);
+      }
+    } catch (error) {
+      const halted = error instanceof Error && error.message === "cancelled";
+      if (!halted && runId.current === id) setReviewFailed(true);
+    } finally {
+      if (runId.current === id) {
+        searchingRef.current = false;
+        setRunning(false);
+        setProgress(null);
+      }
+    }
   }
 
   async function reviewCurrentGame() {
     if (running || total === 0) return;
     const id = ++runId.current;
-    cancelRef.current = false;
+    haltSearch();
     setReviewFailed(false);
     setReview(null);
+    liveMovesRef.current = [];
     setLiveMoves([]);
     setRunning(true);
     setPlaying(false);
     const client = engineRef.current ?? new StockfishClient();
     engineRef.current = client;
+    searchingRef.current = true;
     try {
       const result = await analyzeGame(
         game.moves,
@@ -381,11 +454,13 @@ export function ChessReplayer({
           if (cancelRef.current || runId.current !== id) return;
           setProgress({ done, total: count });
           if (!move) return;
-          setLiveMoves((current) =>
-            replace ? current.map((item) => (item.ply === move.ply ? move : item)) : [...current, move],
-          );
+          setLiveMoves((current) => {
+            const next = replace ? current.map((item) => (item.ply === move.ply ? move : item)) : [...current, move];
+            liveMovesRef.current = next;
+            return next;
+          });
         },
-        () => cancelRef.current,
+        () => cancelRef.current || runId.current !== id,
         pgn === loadedPgn ? marks : "",
         { whiteRating: game.whiteRating, blackRating: game.blackRating },
       );
@@ -395,6 +470,7 @@ export function ChessReplayer({
       if (!cancelled && !cancelRef.current && runId.current === id) setReviewFailed(true);
     } finally {
       if (runId.current === id) {
+        searchingRef.current = false;
         setRunning(false);
         setProgress(null);
       }
@@ -423,13 +499,18 @@ export function ChessReplayer({
     const chosen = promote ? choices.find((move) => move.promotion === promote) : choices[0];
     if (!chosen) return;
     chess.move({ from, to, promotion: promote ?? chosen.promotion });
-    const nextPgn = pgnFromMoves(pgn, chess.history());
+    const nextMoves = chess.history({ verbose: true });
+    const nextPgn = pgnFromMoves(pgn, nextMoves.map((move) => move.san));
     setLoadError(false);
     setDraft(nextPgn);
     setPgn(nextPgn);
-    setPly(chess.history().length);
+    setPly(nextMoves.length);
     setSelected(null);
     setPromotion(null);
+    void reviewJustPlayed(nextMoves, nextMoves.length - 1, {
+      whiteRating: game.whiteRating,
+      blackRating: game.blackRating,
+    });
   }
 
   function onSquarePointerDown(event: React.PointerEvent<HTMLButtonElement>, square: Square) {

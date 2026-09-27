@@ -365,21 +365,62 @@ export async function analyzeGame(
     onProgress(moves.length + refined, total, again, true);
   }
 
+  return gameReviewFromMoves(reviewed);
+}
+
+/** Accuracy totals for the moves reviewed so far. */
+export function gameReviewFromMoves(moves: MoveReview[]): GameReview {
   const white = emptySummary();
   const black = emptySummary();
-  for (const move of reviewed) {
+  for (const move of moves) {
     const bucket = move.color === "white" ? white : black;
     bucket[move.classification] += 1;
   }
   const score = (color: MoveReview["color"]) =>
-    overallAccuracy(reviewed.filter((move) => move.color === color));
+    overallAccuracy(moves.filter((move) => move.color === color));
   return {
-    moves: reviewed,
+    moves,
     white,
     black,
     whiteAccuracy: score("white"),
     blackAccuracy: score("black"),
   };
+}
+
+/** Review one board move, showing the first pass before a deeper check. */
+export async function analyzeOneMove(
+  moves: Move[],
+  index: number,
+  engine: ReviewEngine,
+  isCancelled: () => boolean,
+  onUpdate: (move: MoveReview) => void,
+  bookMarks = "",
+  players: ReviewPlayers = UNRATED,
+): Promise<MoveReview | null> {
+  const first = await reviewMoveAt(
+    moves,
+    index,
+    engine,
+    { depth: reviewConfig.firstPassDepth, multiPv: reviewConfig.firstPassMultiPv },
+    bookMarks,
+    players,
+    isCancelled,
+  );
+  if (isCancelled() || !first) return null;
+  onUpdate(first);
+  if (!needsSecondPass(first)) return first;
+  const again = await reviewMoveAt(
+    moves,
+    index,
+    engine,
+    { depth: reviewConfig.secondPassDepth, multiPv: reviewConfig.multiPv },
+    bookMarks,
+    players,
+    isCancelled,
+  );
+  if (isCancelled() || !again) return first;
+  onUpdate(again);
+  return again;
 }
 
 export function summaryOrder(): Classification[] {

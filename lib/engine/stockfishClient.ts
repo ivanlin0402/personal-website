@@ -148,6 +148,10 @@ export class StockfishClient {
     this.send("stop");
   }
 
+  warm() {
+    return this.ensure();
+  }
+
   quit() {
     this.epoch += 1;
     const waiter = this.pending;
