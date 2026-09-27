@@ -134,7 +134,7 @@ async function main() {
   const white = review.moves.filter((move) => move.color === "white");
   console.log(`\nWhite accuracy ${review.whiteAccuracy}`);
   console.log(`White brilliant count ${review.white.brilliant}`);
-  const inspect = new Set(["Rf3", "Rxh3", "Qxf6+", "Qxg7+", "gxh3"]);
+  const inspect = new Set(["Re3", "Rf3", "Rxh3", "Qxf6+", "Qxg7+", "gxh3"]);
   for (const move of white) {
     const sacrifice = move.features.sacrificeCandidate;
     if (!inspect.has(move.san) && !sacrifice.isSacrificeCandidate && move.classification !== "brilliant") continue;
@@ -151,8 +151,15 @@ async function main() {
     console.log(`pv ${sacrifice.forcedSequence.join(" ")}`);
     console.log(`${move.brilliant.accepted ? "BRILLIANT" : "NOT BRILLIANT"}: ${move.brilliant.reason}`);
   }
-  if (review.white.brilliant !== 3) {
-    console.error(`\nExpected 3 white brilliant moves, found ${review.white.brilliant}`);
+  const brillants = white.filter((move) => move.classification === "brilliant").map((move) => move.san);
+  const expected = ["Re3", "Rxh3", "Qxg7+"];
+  const queenCheck = white.find((move) => move.san === "Qxf6+");
+  if (brillants.join(" ") !== expected.join(" ")) {
+    console.error(`\nExpected brilliant moves ${expected.join(", ")}, found ${brillants.join(", ") || "none"}`);
+    process.exit(1);
+  }
+  if (!queenCheck || queenCheck.classification === "brilliant" || (queenCheck.classification !== "great" && queenCheck.classification !== "best")) {
+    console.error(`\nExpected Qxf6+ to be great or best, found ${queenCheck?.classification ?? "missing"}`);
     process.exit(1);
   }
   console.log("\nBRILLIANT FIXTURE ok");

@@ -1,5 +1,5 @@
 import { Chess, type Move, type PieceSymbol, type Square } from "chess.js";
-import { brilliantVerdict, detectSacrificeCandidate, getBrilliantThresholds, pieceLetter } from "@/lib/review/brilliant";
+import { brilliantVerdict, closePieceSaveCp, detectSacrificeCandidate, getBrilliantThresholds, pieceLetter } from "@/lib/review/brilliant";
 import {
   centipawnLoss,
   formatWhiteEval,
@@ -237,12 +237,21 @@ async function reviewMoveAt(
   const rating = turn === "w" ? players.whiteRating : players.blackRating;
   const brilliantBand = getBrilliantThresholds(rating);
   const sacrifice = sacrificeInfo(fen, move);
+  const savingMoves = playedIsBest
+    ? root.lines.flatMap((line) => {
+        if (line.move === uci) return [];
+        const gap = playerGapCp(beforeWhite, whiteFromLine(line, turn), turn);
+        if (gap == null || gap < 0 || gap > closePieceSaveCp) return [];
+        return [line.move];
+      })
+    : [];
   const sacrificeCandidate = detectSacrificeCandidate({
     fenBefore: fen,
     pvUci: continuation,
     playerColor: turn,
     minimumMaterial: brilliantBand.minimumMaterial,
     horizon: brilliantBand.horizon,
+    savingMoves,
   });
   const playerBefore = toPlayerEval(beforeWhite, turn);
   const playerAfter = toPlayerEval(afterWhite, turn);

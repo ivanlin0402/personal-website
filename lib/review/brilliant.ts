@@ -54,9 +54,27 @@ export function noSacrifice(): SacrificeCandidate {
   };
 }
 
+/** A close alternative that would have moved this piece away means the piece was not already lost. */
+export const closePieceSaveCp = 100;
+
+function isNetGift(chess: Chess, square: Square, pieceType: CountedPiece, opponent: "w" | "b"): boolean {
+  const captures = chess
+    .moves({ verbose: true })
+    .filter((move) => move.to === square && move.captured === pieceType && move.color === opponent);
+  return captures.some((capture) => {
+    const trial = new Chess(chess.fen());
+    if (!trial.move(capture)) return false;
+    const recaptures = trial.moves({ verbose: true }).filter((move) => move.to === square && move.captured);
+    if (recaptures.length === 0) return true;
+    const gained = Math.max(...recaptures.map((move) => VALUE[move.captured ?? "p"]));
+    return VALUE[pieceType] > gained;
+  });
+}
+
 /**
- * A sacrifice is the piece this move places where the opponent actually takes it.
- * Leaving a different pawn or piece, including one that was already lost, is not a sacrifice.
+ * A sacrifice is the piece this move places where the opponent takes it, before that same piece moves again.
+ * A best move can also offer a different piece when the opponent can take it at once and a close alternative
+ * would have moved that piece away. A pawn move, or leaving a piece that was already lost, is not a sacrifice.
  */
 export function detectSacrificeCandidate(input: {
   fenBefore: string;
@@ -64,6 +82,7 @@ export function detectSacrificeCandidate(input: {
   playerColor: "w" | "b";
   minimumMaterial: number;
   horizon: number;
+  savingMoves?: string[];
 }): SacrificeCandidate {
   const empty = noSacrifice();
   const first = uciParts(input.pvUci[0] ?? "");
@@ -86,14 +105,17 @@ export function detectSacrificeCandidate(input: {
   }
   if (!played || played.piece === "p" || alreadyLost) return { ...empty, materialBefore };
   const materialImmediatelyAfter = materialTotal(chess, input.playerColor);
+  const afterMove = chess.fen();
   const sequence = [played.san];
   const horizon = Math.max(1, input.horizon);
-  let followedSquare: string = played.to;
+  const followedSquare: string = played.to;
   const offeredSquare = chess.isAttacked(played.to, opponent) ? played.to : "";
+  const offered = offerSavedPiece(afterMove, played.san, input, materialBefore, materialImmediatelyAfter);
 
   let taken: { value: number; type: CountedPiece; byKing: boolean; weCapturedFirst: boolean; ply: number; immediate: boolean } | null = null;
   let equalTradeSquare: string | null = null;
   let equalTradeBack = false;
+  let leftSquare = false;
   let forcing = played.san.includes("+") || played.san.includes("#") || played.captured != null;
   const weCapturedFirst = played.captured != null;
   const limit = Math.min(horizon, input.pvUci.length);
@@ -102,7 +124,7 @@ export function detectSacrificeCandidate(input: {
     if (!step) break;
     const mover = chess.get(step.from as Square);
     const movingOurs = mover?.color === input.playerColor;
-    if (movingOurs && step.from === followedSquare) followedSquare = step.to;
+    if (movingOurs && step.from === followedSquare) leftSquare = true;
     let next;
     try {
       next = chess.move(step);
@@ -113,7 +135,8 @@ export function detectSacrificeCandidate(input: {
     sequence.push(next.san);
     // Later quiet moves do not undo a capture that already happened on this line.
     if (!taken && movingOurs && !next.captured && !next.san.includes("+") && !next.san.includes("#")) forcing = false;
-    const capturesMovedPiece = next.captured != null && next.color !== input.playerColor && next.to === followedSquare;
+    const capturesMovedPiece =
+      !leftSquare && next.captured != null && next.color !== input.playerColor && next.to === followedSquare;
     if (!taken && capturesMovedPiece && next.captured && next.captured !== "k" && next.captured !== "p") {
       const value = VALUE[next.captured];
       const netGiven =
@@ -141,7 +164,7 @@ export function detectSacrificeCandidate(input: {
   }
 
   if (!taken || (equalTradeBack && taken.ply === 1 && !taken.byKing) || (!taken.immediate && !forcing)) {
-    return { ...empty, forcedSequence: sequence, materialBefore, materialImmediatelyAfter };
+    return offered ?? { ...empty, forcedSequence: sequence, materialBefore, materialImmediatelyAfter };
   }
 
   const ourEnd = materialTotal(chess, input.playerColor);
@@ -180,6 +203,48 @@ export function detectSacrificeCandidate(input: {
     compensationFound,
     compensationType,
     forcedSequence: sequence,
+    materialBefore,
+    materialImmediatelyAfter,
+  };
+}
+
+/** The opponent can take this piece at once, and a close alternative would have moved it away. */
+function offerSavedPiece(
+  fenAfter: string,
+  playedSan: string,
+  input: { playerColor: "w" | "b"; minimumMaterial: number; savingMoves?: string[] },
+  materialBefore: number,
+  materialImmediatelyAfter: number,
+): SacrificeCandidate | null {
+  const saves = input.savingMoves ?? [];
+  if (saves.length === 0) return null;
+  const chess = new Chess(fenAfter);
+  const opponent = input.playerColor === "w" ? "b" : "w";
+  let best: { value: number; type: CountedPiece; san: string } | null = null;
+  const seen = new Set<string>();
+  for (const uci of saves) {
+    const from = uci.slice(0, 2) as Square;
+    if (seen.has(from)) continue;
+    seen.add(from);
+    const piece = chess.get(from);
+    if (!piece || piece.color !== input.playerColor || piece.type === "p" || piece.type === "k") continue;
+    if (VALUE[piece.type] < input.minimumMaterial) continue;
+    if (!isNetGift(chess, from, piece.type, opponent)) continue;
+    const trial = new Chess(fenAfter);
+    const capture = trial.moves({ verbose: true }).find((move) => move.to === from && move.captured === piece.type);
+    if (!best || VALUE[piece.type] > best.value) {
+      best = { value: VALUE[piece.type], type: piece.type, san: capture?.san ?? "" };
+    }
+  }
+  if (!best) return null;
+  return {
+    isSacrificeCandidate: true,
+    type: "offered-piece",
+    sacrificedPiece: PIECE_NAME[best.type],
+    materialValue: best.value,
+    compensationFound: true,
+    compensationType: "positional",
+    forcedSequence: best.san ? [playedSan, best.san] : [playedSan],
     materialBefore,
     materialImmediatelyAfter,
   };

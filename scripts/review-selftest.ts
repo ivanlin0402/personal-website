@@ -412,7 +412,6 @@ function continuationFrom(pgn: string, san: string, plies: number): { fen: strin
 
 for (const [san, piece] of [
   ["Rxh3", "rook"],
-  ["Qxf6+", "queen"],
   ["Qxg7+", "queen"],
 ] as const) {
   const line = continuationFrom(fixturePgn, san, 8);
@@ -445,6 +444,48 @@ if (continuationFrom(fixturePgn, "Qxg7+", 8)?.color === "w") {
     failed += 1;
     console.error("queen offer taken by the king should be a deflection", found.type);
   }
+}
+const queenCheck = continuationFrom(fixturePgn, "Qxf6+", 8);
+const queenCheckOffer = queenCheck
+  ? detectSacrificeCandidate({
+      fenBefore: queenCheck.fen,
+      pvUci: queenCheck.pv,
+      playerColor: queenCheck.color,
+      minimumMaterial: 2,
+      horizon: 8,
+    })
+  : noSacrifice();
+if (queenCheckOffer.isSacrificeCandidate) {
+  failed += 1;
+  console.error("Qxf6+ moves the queen again before it is taken, so it is not that move's sacrifice", queenCheckOffer);
+}
+const rookLift = continuationFrom(fixturePgn, "Re3", 8);
+const knightOffer = rookLift
+  ? detectSacrificeCandidate({
+      fenBefore: rookLift.fen,
+      pvUci: rookLift.pv,
+      playerColor: rookLift.color,
+      minimumMaterial: 2,
+      horizon: 8,
+      savingMoves: ["c4e3"],
+    })
+  : noSacrifice();
+if (!knightOffer.isSacrificeCandidate || knightOffer.sacrificedPiece !== "knight" || knightOffer.type !== "offered-piece") {
+  failed += 1;
+  console.error("Re3 leaves the knight that Ne3 would have saved", knightOffer);
+}
+const quietLift = rookLift
+  ? detectSacrificeCandidate({
+      fenBefore: rookLift.fen,
+      pvUci: rookLift.pv,
+      playerColor: rookLift.color,
+      minimumMaterial: 2,
+      horizon: 8,
+    })
+  : noSacrifice();
+if (quietLift.isSacrificeCandidate) {
+  failed += 1;
+  console.error("Re3 is not a sacrifice unless a close alternative saves the hanging piece", quietLift);
 }
 const quiet = continuationFrom(fixturePgn, "e4", 4);
 const opening = quiet
