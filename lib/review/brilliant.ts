@@ -55,9 +55,8 @@ export function noSacrifice(): SacrificeCandidate {
 }
 
 /**
- * A sacrifice is a valuable piece this move leaves where the opponent can take it,
- * and the engine line actually takes it. The material does not have to stay gone:
- * winning it back, or winning the queen, is compensation.
+ * A sacrifice is the piece this move places where the opponent actually takes it.
+ * Leaving a different pawn or piece, including one that was already lost, is not a sacrifice.
  */
 export function detectSacrificeCandidate(input: {
   fenBefore: string;
@@ -74,28 +73,23 @@ export function detectSacrificeCandidate(input: {
   const opponent = input.playerColor === "w" ? "b" : "w";
   const opponentBefore = materialTotal(chess, opponent);
   const queensBefore = queenCount(chess, opponent);
+  const moverSquare = first.from as Square;
+  const alreadyLost =
+    chess.get(moverSquare)?.type !== "k" &&
+    chess.isAttacked(moverSquare, opponent) &&
+    !chess.isAttacked(moverSquare, input.playerColor);
   let played;
   try {
     played = chess.move(first);
   } catch {
     played = null;
   }
-  if (!played) return { ...empty, materialBefore };
+  if (!played || played.piece === "p" || alreadyLost) return { ...empty, materialBefore };
   const materialImmediatelyAfter = materialTotal(chess, input.playerColor);
   const sequence = [played.san];
   const horizon = Math.max(1, input.horizon);
   let followedSquare: string = played.to;
-
-  const offered = new Map<string, { value: number; type: CountedPiece }>();
-  for (const reply of chess.moves({ verbose: true })) {
-    if (!reply.captured || reply.captured === "k") continue;
-    const value = VALUE[reply.captured];
-    if (value < input.minimumMaterial) continue;
-    const previous = offered.get(reply.to);
-    if (!previous || value > previous.value) {
-      offered.set(reply.to, { value, type: reply.captured });
-    }
-  }
+  const offeredSquare = chess.isAttacked(played.to, opponent) ? played.to : "";
 
   let taken: { value: number; type: CountedPiece; byKing: boolean; weCapturedFirst: boolean; ply: number; immediate: boolean } | null = null;
   let equalTradeSquare: string | null = null;
@@ -119,9 +113,8 @@ export function detectSacrificeCandidate(input: {
     sequence.push(next.san);
     // Later quiet moves do not undo a capture that already happened on this line.
     if (!taken && movingOurs && !next.captured && !next.san.includes("+") && !next.san.includes("#")) forcing = false;
-    const capturesFollowed = next.captured != null && next.color !== input.playerColor && next.to === followedSquare;
-    const capturesOffer = next.captured != null && next.color !== input.playerColor && offered.has(next.to);
-    if (!taken && (capturesFollowed || capturesOffer) && next.captured && next.captured !== "k") {
+    const capturesMovedPiece = next.captured != null && next.color !== input.playerColor && next.to === followedSquare;
+    if (!taken && capturesMovedPiece && next.captured && next.captured !== "k" && next.captured !== "p") {
       const value = VALUE[next.captured];
       const netGiven =
         materialBefore -
@@ -135,7 +128,7 @@ export function detectSacrificeCandidate(input: {
           byKing: mover?.type === "k",
           weCapturedFirst,
           ply,
-          immediate: capturesOffer,
+          immediate: next.to === offeredSquare,
         };
       }
     }

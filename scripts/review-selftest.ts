@@ -460,6 +460,61 @@ if (opening.isSacrificeCandidate) {
   failed += 1;
   console.error("the opening pawn move is not a sacrifice", opening);
 }
+const leftBehind = `[Event "Live Chess"]
+[Result "1-0"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bc4 Nf6 4. d3 Be7 5. O-O O-O 6. Nc3 a6 7. a4 Nb4 8. Bd2
+c5 9. Nd5 d6 10. Bxb4 cxb4 11. d4 Be6 12. dxe5 dxe5 13. Nxe5 Nxe4 14. Nxe7+ Qxe7
+15. Re1 Bxc4 16. Nxc4 Rad8 17. Qf3 Qc5 18. Qxe4 Rd4 19. Qxb7 Rxc4 20. Qxa6 Rxc2
+21. Qf1 Rxb2 22. Rec1 Qf5 23. a5 Rd2 24. Rd1 Rxd1 25. Rxd1 Qxa5 26. h3 b3 27.
+Qd3 b2 28. Qb1 Qa3 29. Rd2 Rb8 30. Kh2 Qa1 31. Qd3 b1=Q 32. Qd8+ Rxd8 33. Rxd8#`;
+for (const san of ["Be6", "Qxb7"]) {
+  const line = continuationFrom(leftBehind, san, 8);
+  const found = line
+    ? detectSacrificeCandidate({
+        fenBefore: line.fen,
+        pvUci: line.pv,
+        playerColor: line.color,
+        minimumMaterial: 2,
+        horizon: 8,
+      })
+    : noSacrifice();
+  if (found.isSacrificeCandidate) {
+    failed += 1;
+    console.error(`${san} only leaves an already available piece, it is not a sacrifice`, found);
+  }
+}
+const blackPawn = new Chess();
+blackPawn.loadPgn(leftBehind);
+const blackHistory = blackPawn.history({ verbose: true });
+const blackPawnIndex = blackHistory.findIndex((move) => move.color === "b" && move.san === "dxe5");
+const blackPawnBoard = new Chess();
+for (let cursor = 0; cursor < blackPawnIndex; cursor += 1) blackPawnBoard.move(blackHistory[cursor].san);
+const blackPawnLine = detectSacrificeCandidate({
+  fenBefore: blackPawnBoard.fen(),
+  pvUci: blackHistory.slice(blackPawnIndex, blackPawnIndex + 8).map((move) => move.from + move.to + (move.promotion ?? "")),
+  playerColor: "b",
+  minimumMaterial: 2,
+  horizon: 8,
+});
+if (blackPawnLine.isSacrificeCandidate) {
+  failed += 1;
+  console.error("capturing with a pawn and leaving the bishop is not a sacrifice", blackPawnLine);
+}
+const queenOffer = continuationFrom(leftBehind, "Qd8+", 3);
+const matingQueen = queenOffer
+  ? detectSacrificeCandidate({
+      fenBefore: queenOffer.fen,
+      pvUci: queenOffer.pv,
+      playerColor: queenOffer.color,
+      minimumMaterial: 2,
+      horizon: 8,
+    })
+  : noSacrifice();
+if (!matingQueen.isSacrificeCandidate || matingQueen.sacrificedPiece !== "queen" || matingQueen.compensationType !== "mate") {
+  failed += 1;
+  console.error("giving up the queen for mate is still a sacrifice", matingQueen);
+}
 const knightForRook = continuationFrom(fixturePgn, "Ne8+", 6);
 const winningCapture = knightForRook
   ? detectSacrificeCandidate({
