@@ -427,7 +427,22 @@ export function ChessReplayer({
   }
 
   async function reviewCurrentGame() {
-    if (total === 0) return;
+    const source = draft.trim() ? draft : pgn;
+    const parsed = parsePgn(source);
+    if (parsed.moves.length === 0) {
+      if (parsed.error) setLoadError(true);
+      return;
+    }
+    const sameGame =
+      parsed.moves.length === game.moves.length &&
+      parsed.moves.every((move, index) => move.san === game.moves[index]?.san);
+    if (!sameGame) {
+      setLoadError(false);
+      setPgn(source);
+      setDraft(source);
+      setPly(parsed.moves.length);
+      setPlaying(false);
+    }
     const id = ++runId.current;
     haltSearch();
     setReviewFailed(false);
@@ -441,7 +456,7 @@ export function ChessReplayer({
     searchingRef.current = true;
     try {
       const result = await analyzeGame(
-        game.moves,
+        parsed.moves,
         client,
         (done, count, move, replace) => {
           if (cancelRef.current || runId.current !== id) return;
@@ -454,8 +469,8 @@ export function ChessReplayer({
           });
         },
         () => cancelRef.current || runId.current !== id,
-        pgn === loadedPgn ? marks : "",
-        { whiteRating: game.whiteRating, blackRating: game.blackRating },
+        sameGame && pgn === loadedPgn ? marks : "",
+        { whiteRating: parsed.whiteRating, blackRating: parsed.blackRating },
       );
       if (!cancelRef.current && runId.current === id) setReview(result);
     } catch (error) {
