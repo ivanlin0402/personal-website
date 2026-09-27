@@ -467,25 +467,17 @@ const knightOffer = rookLift
       playerColor: rookLift.color,
       minimumMaterial: 2,
       horizon: 8,
-      savingMoves: ["c4e3"],
     })
   : noSacrifice();
-if (!knightOffer.isSacrificeCandidate || knightOffer.sacrificedPiece !== "knight" || knightOffer.type !== "offered-piece") {
+if (
+  !knightOffer.isSacrificeCandidate ||
+  knightOffer.sacrificedPiece !== "knight" ||
+  knightOffer.type !== "offered-piece" ||
+  knightOffer.compensationType !== "queen-win" ||
+  knightOffer.forcedSequence.join(" ") !== "Re3 Bxc4 Rg3"
+) {
   failed += 1;
-  console.error("Re3 leaves the knight that Ne3 would have saved", knightOffer);
-}
-const quietLift = rookLift
-  ? detectSacrificeCandidate({
-      fenBefore: rookLift.fen,
-      pvUci: rookLift.pv,
-      playerColor: rookLift.color,
-      minimumMaterial: 2,
-      horizon: 8,
-    })
-  : noSacrifice();
-if (quietLift.isSacrificeCandidate) {
-  failed += 1;
-  console.error("Re3 is not a sacrifice unless a close alternative saves the hanging piece", quietLift);
+  console.error("Re3 offers the knight because Bxc4 is met by a queen pin", knightOffer);
 }
 const quiet = continuationFrom(fixturePgn, "e4", 4);
 const opening = quiet

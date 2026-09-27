@@ -54,9 +54,6 @@ export function noSacrifice(): SacrificeCandidate {
   };
 }
 
-/** A close alternative that would have moved this piece away means the piece was not already lost. */
-export const closePieceSaveCp = 100;
-
 function isNetGift(chess: Chess, square: Square, pieceType: CountedPiece, opponent: "w" | "b"): boolean {
   const captures = chess
     .moves({ verbose: true })
@@ -73,8 +70,8 @@ function isNetGift(chess: Chess, square: Square, pieceType: CountedPiece, oppone
 
 /**
  * A sacrifice is the piece this move places where the opponent takes it, before that same piece moves again.
- * A best move can also offer a different piece when the opponent can take it at once and a close alternative
- * would have moved that piece away. A pawn move, or leaving a piece that was already lost, is not a sacrifice.
+ * It can also be another piece the opponent can take at once, when the piece just moved then pins a more
+ * valuable piece and the pin wins material. A pawn move, or leaving a piece that was already lost, is not a sacrifice.
  */
 export function detectSacrificeCandidate(input: {
   fenBefore: string;
@@ -82,7 +79,6 @@ export function detectSacrificeCandidate(input: {
   playerColor: "w" | "b";
   minimumMaterial: number;
   horizon: number;
-  savingMoves?: string[];
 }): SacrificeCandidate {
   const empty = noSacrifice();
   const first = uciParts(input.pvUci[0] ?? "");
@@ -110,7 +106,17 @@ export function detectSacrificeCandidate(input: {
   const horizon = Math.max(1, input.horizon);
   const followedSquare: string = played.to;
   const offeredSquare = chess.isAttacked(played.to, opponent) ? played.to : "";
-  const offered = offerSavedPiece(afterMove, played.san, input, materialBefore, materialImmediatelyAfter);
+  const offered = offerPinnedPiece(
+    afterMove,
+    played.to as Square,
+    played.san,
+    input.playerColor,
+    opponent,
+    materialBefore - opponentBefore,
+    input.minimumMaterial,
+    materialBefore,
+    materialImmediatelyAfter,
+  );
 
   let taken: { value: number; type: CountedPiece; byKing: boolean; weCapturedFirst: boolean; ply: number; immediate: boolean } | null = null;
   let equalTradeSquare: string | null = null;
@@ -208,32 +214,125 @@ export function detectSacrificeCandidate(input: {
   };
 }
 
-/** The opponent can take this piece at once, and a close alternative would have moved it away. */
-function offerSavedPiece(
+function squareName(file: number, rank: number): Square {
+  return `${"abcdefgh"[file]}${rank}` as Square;
+}
+
+function pieceCount(chess: Chess, color: "w" | "b", type: CountedPiece): number {
+  let count = 0;
+  for (const rank of chess.board()) {
+    for (const piece of rank) {
+      if (piece?.color === color && piece.type === type) count += 1;
+    }
+  }
+  return count;
+}
+
+function ray(from: Square, to: Square): Square[] | null {
+  const fileDelta = to.charCodeAt(0) - from.charCodeAt(0);
+  const rankDelta = Number(to[1]) - Number(from[1]);
+  const stepFile = Math.sign(fileDelta);
+  const stepRank = Math.sign(rankDelta);
+  if (stepFile === 0 && stepRank === 0) return null;
+  if (stepFile !== 0 && stepRank !== 0 && Math.abs(fileDelta) !== Math.abs(rankDelta)) return null;
+  const squares: Square[] = [];
+  let file = from.charCodeAt(0) + stepFile;
+  let rank = Number(from[1]) + stepRank;
+  while (file !== to.charCodeAt(0) || rank !== Number(to[1])) {
+    if (file < 97 || file > 104 || rank < 1 || rank > 8) return null;
+    squares.push(squareName(file - 97, rank));
+    file += stepFile;
+    rank += stepRank;
+    if (squares.length > 6) return null;
+  }
+  return squares;
+}
+
+/** After the opponent takes the offered piece, the moved piece pins something more valuable and every defense still wins material. */
+function offerPinnedPiece(
   fenAfter: string,
+  movedTo: Square,
   playedSan: string,
-  input: { playerColor: "w" | "b"; minimumMaterial: number; savingMoves?: string[] },
+  playerColor: "w" | "b",
+  opponent: "w" | "b",
+  balanceBefore: number,
+  minimumMaterial: number,
   materialBefore: number,
   materialImmediatelyAfter: number,
 ): SacrificeCandidate | null {
-  const saves = input.savingMoves ?? [];
-  if (saves.length === 0) return null;
   const chess = new Chess(fenAfter);
-  const opponent = input.playerColor === "w" ? "b" : "w";
-  let best: { value: number; type: CountedPiece; san: string } | null = null;
-  const seen = new Set<string>();
-  for (const uci of saves) {
-    const from = uci.slice(0, 2) as Square;
-    if (seen.has(from)) continue;
-    seen.add(from);
-    const piece = chess.get(from);
-    if (!piece || piece.color !== input.playerColor || piece.type === "p" || piece.type === "k") continue;
-    if (VALUE[piece.type] < input.minimumMaterial) continue;
-    if (!isNetGift(chess, from, piece.type, opponent)) continue;
-    const trial = new Chess(fenAfter);
-    const capture = trial.moves({ verbose: true }).find((move) => move.to === from && move.captured === piece.type);
-    if (!best || VALUE[piece.type] > best.value) {
-      best = { value: VALUE[piece.type], type: piece.type, san: capture?.san ?? "" };
+  const captures = chess
+    .moves({ verbose: true })
+    .filter(
+      (move) =>
+        move.captured &&
+        move.captured !== "p" &&
+        move.captured !== "k" &&
+        move.to !== movedTo &&
+        VALUE[move.captured] >= minimumMaterial &&
+        isNetGift(chess, move.to, move.captured, opponent),
+    );
+  let best: { value: number; type: CountedPiece; sequence: string[]; queen: boolean } | null = null;
+  for (const capture of captures) {
+    const taken = new Chess(fenAfter);
+    const captured = taken.move(capture);
+    if (!captured?.captured || captured.captured === "p" || captured.captured === "k") continue;
+    const offeredType = captured.captured;
+    const pins = taken.moves({ verbose: true }).filter((move) => move.from === movedTo);
+    for (const pin of pins) {
+      const afterPin = new Chess(taken.fen());
+      const pinning = afterPin.move(pin);
+      if (!pinning) continue;
+      const diagonal = pin.from.charCodeAt(0) !== pin.to.charCodeAt(0) && pin.from[1] !== pin.to[1];
+      if (diagonal && pinning.piece !== "b" && pinning.piece !== "q") continue;
+      if (!diagonal && pinning.piece !== "r" && pinning.piece !== "q") continue;
+      const king = kingSquare(afterPin, opponent);
+      if (!king) continue;
+      const between = ray(pin.to, king);
+      if (!between) continue;
+      const victim = between.find((square) => afterPin.get(square)?.color === opponent);
+      if (!victim || between.some((square) => square !== victim && afterPin.get(square))) continue;
+      const pinned = afterPin.get(victim);
+      if (!pinned || pinned.type === "p" || pinned.type === "k" || VALUE[pinned.type] <= VALUE[offeredType]) continue;
+      const escapes = afterPin
+        .moves({ square: victim, verbose: true })
+        .filter((move) => move.to !== pin.to && !between.includes(move.to));
+      if (escapes.length > 0) continue;
+      const beforeCount = pieceCount(afterPin, opponent, pinned.type);
+      let worst = 99;
+      let wonPiece = false;
+      for (const reply of afterPin.moves({ verbose: true })) {
+        const next = new Chess(afterPin.fen());
+        next.move(reply);
+        const answers = next.moves({ verbose: true });
+        let bestBalance = answers.length === 0 ? material(next, playerColor) - material(next, opponent) : -99;
+        let bestBoard: Chess | null = answers.length === 0 ? next : null;
+        for (const answer of answers) {
+          const end = new Chess(next.fen());
+          end.move(answer);
+          const balance = material(end, playerColor) - material(end, opponent);
+          if (balance > bestBalance) {
+            bestBalance = balance;
+            bestBoard = end;
+          }
+        }
+        const capturedPiece = bestBoard != null && pieceCount(bestBoard, opponent, pinned.type) < beforeCount;
+        if (bestBalance < worst) {
+          worst = bestBalance;
+          wonPiece = capturedPiece;
+        } else if (bestBalance === worst && !capturedPiece) {
+          wonPiece = false;
+        }
+      }
+      if (worst <= balanceBefore || !wonPiece) continue;
+      if (!best || VALUE[offeredType] > best.value) {
+        best = {
+          value: VALUE[offeredType],
+          type: offeredType,
+          sequence: [playedSan, capture.san, pin.san],
+          queen: pinned.type === "q",
+        };
+      }
     }
   }
   if (!best) return null;
@@ -243,11 +342,26 @@ function offerSavedPiece(
     sacrificedPiece: PIECE_NAME[best.type],
     materialValue: best.value,
     compensationFound: true,
-    compensationType: "positional",
-    forcedSequence: best.san ? [playedSan, best.san] : [playedSan],
+    compensationType: best.queen ? "queen-win" : "material",
+    forcedSequence: best.sequence,
     materialBefore,
     materialImmediatelyAfter,
   };
+}
+
+function kingSquare(chess: Chess, color: "w" | "b"): Square | null {
+  const board = chess.board();
+  for (let rank = 0; rank < 8; rank += 1) {
+    for (let file = 0; file < 8; file += 1) {
+      const piece = board[rank][file];
+      if (piece?.type === "k" && piece.color === color) return squareName(file, 8 - rank);
+    }
+  }
+  return null;
+}
+
+function material(chess: Chess, color: "w" | "b"): number {
+  return materialTotal(chess, color);
 }
 
 /** Lower ratings get a wider near-best window and a lower bar for a sound result. */
