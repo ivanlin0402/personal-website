@@ -396,6 +396,7 @@ export async function analyzeOneMove(
   onUpdate: (move: MoveReview) => void,
   bookMarks = "",
   players: ReviewPlayers = UNRATED,
+  deep = true,
 ): Promise<MoveReview | null> {
   const first = await reviewMoveAt(
     moves,
@@ -408,7 +409,7 @@ export async function analyzeOneMove(
   );
   if (isCancelled() || !first) return null;
   onUpdate(first);
-  if (!needsSecondPass(first)) return first;
+  if (!deep || !needsSecondPass(first)) return first;
   const again = await reviewMoveAt(
     moves,
     index,

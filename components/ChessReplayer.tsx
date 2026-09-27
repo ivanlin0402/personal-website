@@ -229,7 +229,8 @@ export function ChessReplayer({
   const [selected, setSelected] = useState<Square | null>(null);
   const [promotion, setPromotion] = useState<{ from: Square; to: Square } | null>(null);
   const [ghost, setGhost] = useState<{ type: PieceSymbol; white: boolean; x: number; y: number } | null>(null);
-  const dragRef = useRef<{ from: Square; x: number; y: number; moved: boolean } | null>(null);
+  const dragRef = useRef<{ from: Square; startX: number; startY: number; x: number; y: number; moved: boolean } | null>(null);
+  const ghostFrame = useRef(0);
   const [loadError, setLoadError] = useState(false);
   const [review, setReview] = useState<GameReview | null>(null);
   const [liveMoves, setLiveMoves] = useState<MoveReview[]>([]);
@@ -308,7 +309,7 @@ export function ChessReplayer({
     if (lostSquare) endSigns.set(lostSquare, "flag");
     if (wonSquare) endSigns.set(wonSquare, "throne");
   }
-  const liveMove = liveMoves[safePly - 1];
+  const liveMove = liveMoves.find((move) => move.ply === safePly) ?? null;
   function theoryMark(index: number): string {
     const san = game.moves[index]?.san;
     if (!san) return "";
@@ -323,10 +324,11 @@ export function ChessReplayer({
     ? CLASS_MARK[liveMove.classification]
     : theoryMark(safePly - 1) ||
       (liveMoves.length === 0 && pgn === loadedPgn && safePly > 0 ? (marks[safePly - 1] ?? "") : "");
+  const openingReview = liveMoves.find((move) => move.ply === 1);
   const shownEval = liveMove
     ? liveMove.evaluationAfter
-    : liveMoves[0] && safePly === 0
-      ? liveMoves[0].evaluationBefore
+    : openingReview && safePly === 0
+      ? openingReview.evaluationBefore
       : null;
   const showArrow =
     liveMove != null &&
@@ -401,8 +403,8 @@ export function ChessReplayer({
     setLiveMoves(kept);
     setReview(kept.length > 0 ? gameReviewFromMoves(kept) : null);
     setReviewFailed(false);
-    setRunning(true);
-    setProgress({ done: 0, total: 1 });
+    setRunning(false);
+    setProgress(null);
     setPlaying(false);
     const client = engineRef.current ?? new StockfishClient();
     engineRef.current = client;
@@ -411,30 +413,21 @@ export function ChessReplayer({
     const publish = (move: MoveReview) => {
       if (stopped()) return;
       mergeLive(move, moves);
-      setProgress(null);
     };
     try {
-      await analyzeOneMove(moves, index, client, stopped, publish, "", ratings);
+      await new Promise((resolve) => window.setTimeout(resolve, 0));
       if (stopped()) return;
-      for (let hole = 0; hole < moves.length; hole += 1) {
-        if (stopped()) return;
-        if (liveMovesRef.current.some((move) => move.ply - 1 === hole)) continue;
-        await analyzeOneMove(moves, hole, client, stopped, publish, "", ratings);
-      }
+      await analyzeOneMove(moves, index, client, stopped, publish, "", ratings, false);
     } catch (error) {
       const halted = error instanceof Error && error.message === "cancelled";
       if (!halted && runId.current === id) setReviewFailed(true);
     } finally {
-      if (runId.current === id) {
-        searchingRef.current = false;
-        setRunning(false);
-        setProgress(null);
-      }
+      if (runId.current === id) searchingRef.current = false;
     }
   }
 
   async function reviewCurrentGame() {
-    if (running || total === 0) return;
+    if (total === 0) return;
     const id = ++runId.current;
     haltSearch();
     setReviewFailed(false);
@@ -528,23 +521,35 @@ export function ChessReplayer({
     }
     setSelected(square);
     setPromotion(null);
-    dragRef.current = { from: square, x: event.clientX, y: event.clientY, moved: false };
+    dragRef.current = { from: square, startX: event.clientX, startY: event.clientY, x: event.clientX, y: event.clientY, moved: false };
     event.currentTarget.setPointerCapture(event.pointerId);
   }
 
   function onSquarePointerMove(event: React.PointerEvent<HTMLButtonElement>) {
     const drag = dragRef.current;
     if (!drag) return;
-    if (!drag.moved && Math.hypot(event.clientX - drag.x, event.clientY - drag.y) < 5) return;
+    drag.x = event.clientX;
+    drag.y = event.clientY;
+    if (!drag.moved && Math.hypot(drag.x - drag.startX, drag.y - drag.startY) < 5) return;
     drag.moved = true;
-    const piece = position.get(drag.from);
-    if (!piece) return;
-    setGhost({ type: piece.type, white: piece.color === "w", x: event.clientX, y: event.clientY });
+    if (ghostFrame.current) return;
+    ghostFrame.current = window.requestAnimationFrame(() => {
+      ghostFrame.current = 0;
+      const current = dragRef.current;
+      if (!current?.moved) return;
+      const piece = position.get(current.from);
+      if (!piece) return;
+      setGhost({ type: piece.type, white: piece.color === "w", x: current.x, y: current.y });
+    });
   }
 
   function onSquarePointerUp(event: React.PointerEvent<HTMLButtonElement>) {
     const drag = dragRef.current;
     dragRef.current = null;
+    if (ghostFrame.current) {
+      window.cancelAnimationFrame(ghostFrame.current);
+      ghostFrame.current = 0;
+    }
     setGhost(null);
     if (!drag?.moved) return;
     const target = document.elementFromPoint(event.clientX, event.clientY);
@@ -553,7 +558,7 @@ export function ChessReplayer({
   }
 
   function markFor(index: number): string {
-    const live = liveMoves[index];
+    const live = liveMoves.find((move) => move.ply === index + 1);
     if (live) return CLASS_MARK[live.classification];
     const theory = theoryMark(index);
     if (theory) return theory;

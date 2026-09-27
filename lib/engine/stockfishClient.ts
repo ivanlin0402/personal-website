@@ -45,15 +45,26 @@ export class StockfishClient {
   private queue: string[] = [];
   private pending: Waiter | null = null;
   private ready: Promise<void> | null = null;
+  private started = false;
+  private ticket = 0;
   private epoch = 0;
   private multiPv: number = reviewConfig.firstPassMultiPv;
 
   private ensure(): Promise<void> {
     if (this.ready) return this.ready;
-    this.ready = new Promise((resolve, reject) => {
+    let ready: Promise<void> | null = null;
+    ready = new Promise<void>((resolve, reject) => {
       const worker = new Worker(withBasePath(SCRIPT));
       this.worker = worker;
-      worker.onerror = () => reject(new Error("Stockfish failed to start"));
+      const fail = (error: unknown) => {
+        if (this.ready === ready) this.ready = null;
+        if (this.worker === worker) {
+          worker.terminate();
+          this.worker = null;
+        }
+        reject(error instanceof Error ? error : new Error("Stockfish failed to start"));
+      };
+      worker.onerror = () => fail(new Error("Stockfish failed to start"));
       worker.onmessage = (event: MessageEvent<string>) => {
         for (const raw of String(event.data).split(/\r?\n/)) {
           const line = raw.trim();
@@ -68,22 +79,38 @@ export class StockfishClient {
           this.send("isready");
           return this.waitFor(this.epoch, (line) => line === "readyok");
         })
-        .then(() => resolve())
-        .catch(reject);
+        .then(() => {
+          this.started = true;
+          resolve();
+        })
+        .catch(fail);
     });
-    return this.ready;
+    this.ready = ready;
+    return ready;
   }
 
   private send(command: string) {
     this.worker?.postMessage(command);
   }
 
-  private takeLine(line: string) {
-    if (!this.pending) {
-      this.queue.push(line);
+  private remember(lines: string[], line: string) {
+    if (line.startsWith("info ")) {
+      if (!line.includes(" pv ") || line.includes("lowerbound") || line.includes("upperbound")) return;
+      const multipv = line.match(/\bmultipv (\d+)/)?.[1] ?? "1";
+      const index = lines.findIndex((item) => item.startsWith("info ") && (item.match(/\bmultipv (\d+)/)?.[1] ?? "1") === multipv);
+      if (index >= 0) lines[index] = line;
+      else lines.push(line);
       return;
     }
-    this.pending.lines.push(line);
+    lines.push(line);
+  }
+
+  private takeLine(line: string) {
+    if (!this.pending) {
+      if (line === "uciok" || line === "readyok" || line.startsWith("bestmove")) this.queue.push(line);
+      return;
+    }
+    this.remember(this.pending.lines, line);
     if (!this.pending.match(line)) return;
     const waiter = this.pending;
     this.pending = null;
@@ -118,6 +145,9 @@ export class StockfishClient {
 
   async search(fen: string, options?: SearchOptions): Promise<EngineSearch> {
     await this.ensure();
+    const ticket = ++this.ticket;
+    this.stop();
+    if (ticket !== this.ticket) throw new Error("cancelled");
     const epoch = this.epoch;
     const depth = options?.depth ?? reviewConfig.firstPassDepth;
     const multiPv = options?.multiPv ?? reviewConfig.firstPassMultiPv;
@@ -129,17 +159,21 @@ export class StockfishClient {
     this.send("stop");
     this.send("isready");
     await this.waitFor(epoch, (line) => line === "readyok");
+    if (ticket !== this.ticket) throw new Error("cancelled");
     this.queue = [];
     this.send("isready");
     await this.waitFor(epoch, (line) => line === "readyok");
+    if (ticket !== this.ticket) throw new Error("cancelled");
     this.queue = [];
     this.send(`position fen ${fen}`);
     this.send(`go depth ${depth}`);
     const lines = await this.waitFor(epoch, (line) => line.startsWith("bestmove"));
+    if (ticket !== this.ticket) throw new Error("cancelled");
     return parseInfo(lines);
   }
 
   stop() {
+    if (!this.started) return;
     this.epoch += 1;
     const waiter = this.pending;
     this.pending = null;
@@ -154,6 +188,7 @@ export class StockfishClient {
 
   quit() {
     this.epoch += 1;
+    this.started = false;
     const waiter = this.pending;
     this.pending = null;
     waiter?.reject(new Error("cancelled"));
