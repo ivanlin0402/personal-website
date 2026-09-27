@@ -77,6 +77,7 @@ export type Dictionary = {
     fallenKing: string;
     winningKing: string;
     resignedKing: string;
+    timedOutKing: string;
     drawnKing: string;
     chessGames: string;
     sortBy: string;
@@ -212,6 +213,7 @@ const en: Dictionary = {
     fallenKing: "Checkmated king",
     winningKing: "Winning king",
     resignedKing: "Resigned",
+    timedOutKing: "Out of time",
     drawnKing: "Draw",
     chessGames: "Games",
     sortBy: "Sort by",
@@ -381,6 +383,7 @@ const zh: Dictionary = {
     fallenKing: "被將死",
     winningKing: "勝方",
     resignedKing: "認輸",
+    timedOutKing: "超時",
     drawnKing: "和棋",
     chessGames: "棋局",
     sortBy: "排序",

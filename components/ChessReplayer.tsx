@@ -33,7 +33,7 @@ type ParsedGame = {
   error: string | null;
 };
 
-type EndSign = "fallen" | "throne" | "flag" | "half";
+type EndSign = "fallen" | "throne" | "flag" | "clock" | "half";
 
 function ratingHeader(value: string | undefined): number | null {
   const rating = Number(value);
@@ -189,10 +189,14 @@ function MarkGlyph({ code }: { code: string }) {
   return MOVE_MARK[code]?.text ?? null;
 }
 
-function endLabel(t: { project: { fallenKing: string; winningKing: string; resignedKing: string; drawnKing: string } }, kind: EndSign): string {
+function endLabel(
+  t: { project: { fallenKing: string; winningKing: string; resignedKing: string; timedOutKing: string; drawnKing: string } },
+  kind: EndSign,
+): string {
   if (kind === "fallen") return t.project.fallenKing;
   if (kind === "throne") return t.project.winningKing;
   if (kind === "flag") return t.project.resignedKing;
+  if (kind === "clock") return t.project.timedOutKing;
   return t.project.drawnKing;
 }
 
@@ -214,6 +218,19 @@ function EndBadge({ kind, label }: { kind: EndSign; label: string }) {
           <path fill="currentColor" d="M8.2 3.2h11.2L16.6 8l2.8 4.8H8.2z" />
         </svg>
       ) : null}
+      {kind === "clock" ? (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="8.2" fill="none" stroke="currentColor" strokeWidth="2.2" />
+          <path
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 7.4V12l3.2 2"
+          />
+        </svg>
+      ) : null}
       {kind === "half" ? <span className="chess-end__half">½</span> : null}
     </span>
   );
@@ -225,6 +242,8 @@ type ChessReplayerProps = {
   loadToken?: number;
   /** The loaded game ended because a player resigned. */
   resigned?: boolean;
+  /** The loaded game ended because a player ran out of time. */
+  onTime?: boolean;
   /** One letter per ply: R !! G ! S best E excellent C good I !? M ? X miss B ?? K book F forced. */
   marks?: string;
 };
@@ -234,6 +253,7 @@ export function ChessReplayer({
   loadedPly = 0,
   loadToken = 0,
   resigned = false,
+  onTime = false,
   marks = "",
 }: ChessReplayerProps) {
   const { t, locale } = useLanguage();
@@ -304,6 +324,7 @@ export function ChessReplayer({
   const checkmate = position.isCheckmate();
   const headerDraw = game.result === "1/2-1/2" || game.result === "1/2";
   const resignedGame = /resign/i.test(game.termination) || (resigned && pgn === loadedPgn);
+  const timedOut = /on time/i.test(game.termination) || (onTime && pgn === loadedPgn);
   const winner: "w" | "b" | null = game.result === "1-0" ? "w" : game.result === "0-1" ? "b" : null;
   const endSigns = new Map<Square, EndSign>();
   if (atEnd && checkmate) {
@@ -318,6 +339,12 @@ export function ChessReplayer({
       const square = position.findPiece({ type: "k", color })[0];
       if (square) endSigns.set(square, "half");
     }
+  } else if (atEnd && timedOut && winner) {
+    const loser = winner === "w" ? "b" : "w";
+    const lostSquare = position.findPiece({ type: "k", color: loser })[0];
+    const wonSquare = position.findPiece({ type: "k", color: winner })[0];
+    if (lostSquare) endSigns.set(lostSquare, "clock");
+    if (wonSquare) endSigns.set(wonSquare, "throne");
   } else if (atEnd && resignedGame && winner) {
     const loser = winner === "w" ? "b" : "w";
     const lostSquare = position.findPiece({ type: "k", color: loser })[0];

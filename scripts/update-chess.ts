@@ -231,6 +231,7 @@ function toReviewedGame(game: ApiGame): ChessReviewedGame | null {
     moveCount = 0;
   }
   const resigned = me.result === "resigned" || opponent.result === "resigned" || /resignation/i.test(game.pgn);
+  const onTime = me.result === "timeout" || opponent.result === "timeout" || /on time/i.test(game.pgn);
   return {
     id: game.uuid,
     date: pgnDate(game.pgn, game.end_time),
@@ -245,6 +246,7 @@ function toReviewedGame(game: ApiGame): ChessReviewedGame | null {
     pgn: game.pgn.trim(),
     moveCount,
     resigned,
+    onTime,
   };
 }
 

@@ -219,7 +219,8 @@ h4,
 }
 
 .chess-end--fallen,
-.chess-end--flag {
+.chess-end--flag,
+.chess-end--clock {
   background: #c62828;
   color: #fff;
 }
