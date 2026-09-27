@@ -76,6 +76,7 @@ export class StockfishClient {
       this.waitFor(this.epoch, (line) => line === "uciok")
         .then(() => {
           this.send(`setoption name MultiPV value ${reviewConfig.firstPassMultiPv}`);
+          this.send("setoption name Hash value 32");
           this.send("isready");
           return this.waitFor(this.epoch, (line) => line === "readyok");
         })
@@ -155,18 +156,13 @@ export class StockfishClient {
       this.multiPv = multiPv;
       this.send(`setoption name MultiPV value ${multiPv}`);
     }
-    // Drop a bestmove left over from Cancel before this search starts.
-    this.send("stop");
     this.send("isready");
     await this.waitFor(epoch, (line) => line === "readyok");
     if (ticket !== this.ticket) throw new Error("cancelled");
     this.queue = [];
-    this.send("isready");
-    await this.waitFor(epoch, (line) => line === "readyok");
-    if (ticket !== this.ticket) throw new Error("cancelled");
-    this.queue = [];
+    const movetime = options?.movetime ? ` movetime ${options.movetime}` : "";
     this.send(`position fen ${fen}`);
-    this.send(`go depth ${depth}`);
+    this.send(`go depth ${depth}${movetime}`);
     const lines = await this.waitFor(epoch, (line) => line.startsWith("bestmove"));
     if (ticket !== this.ticket) throw new Error("cancelled");
     return parseInfo(lines);

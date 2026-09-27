@@ -479,11 +479,9 @@ async function runEngineCase() {
   const chess = new Chess();
   chess.loadPgn("1. e4 e5");
 const depths: number[] = [];
-const multi: number[] = [];
 const engine: ReviewEngine = {
   async search(fen, options): Promise<EngineSearch> {
     depths.push(options?.depth ?? 0);
-    multi.push(options?.multiPv ?? 0);
     const blackToMove = fen.includes(" b ");
     if (blackToMove) {
       const line = {
@@ -518,13 +516,13 @@ if (reviewed.moves.length !== 2) {
   failed += 1;
   console.error("two-pass review length", reviewed.moves.length);
 }
-if (!depths.includes(reviewConfig.firstPassDepth) || !depths.includes(reviewConfig.secondPassDepth)) {
+if (!depths.includes(reviewConfig.firstPassDepth)) {
   failed += 1;
-  console.error("two-pass depths", depths);
+  console.error("first-pass depth", depths);
 }
-if (!multi.includes(reviewConfig.multiPv)) {
+if (depths.includes(reviewConfig.secondPassDepth)) {
   failed += 1;
-  console.error("deeper multipv", multi);
+  console.error("plain blunder does not need a second pass", depths);
 }
 if (reviewed.moves[0]?.classification !== "blunder") {
   failed += 1;

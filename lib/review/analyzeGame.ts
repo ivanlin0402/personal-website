@@ -47,6 +47,7 @@ export type EngineSearch = {
 export type SearchOptions = {
   depth?: number;
   multiPv?: number;
+  movetime?: number;
 };
 
 export type ReviewEngine = {
@@ -188,17 +189,16 @@ const UNRATED: ReviewPlayers = { whiteRating: null, blackRating: null };
 
 function needsSecondPass(move: MoveReview): boolean {
   const kind = move.classification;
-  if (kind === "brilliant" || kind === "great" || kind === "miss" || kind === "blunder") return true;
+  if (kind === "brilliant" || kind === "great" || kind === "miss") return true;
   if (move.features.sacrificeCandidate.isSacrificeCandidate || move.features.sacrifice !== "none") return true;
-  if (move.features.playerBefore.kind === "mate" || move.features.playerAfter.kind === "mate") return true;
-  return move.winChanceLoss >= reviewConfig.inaccuracyThreshold;
+  return move.features.playerBefore.kind === "mate" || move.features.playerAfter.kind === "mate";
 }
 
 async function reviewMoveAt(
   moves: Move[],
   index: number,
   engine: ReviewEngine,
-  options: { depth: number; multiPv: number },
+  options: SearchOptions,
   bookMarks: string,
   players: ReviewPlayers,
   isCancelled: () => boolean,
@@ -222,7 +222,11 @@ async function reviewMoveAt(
   if (!playedLine) {
     const next = new Chess(fen);
     next.move({ from: move.from, to: move.to, promotion: move.promotion });
-    const child = await engine.search(next.fen(), { depth: options.depth, multiPv: 1 });
+    const child = await engine.search(next.fen(), {
+      depth: reviewConfig.childDepth,
+      multiPv: 1,
+      movetime: reviewConfig.childMovetime,
+    });
     const converted = whiteAfterPlayed(child, next.turn());
     if (converted) afterWhite = converted;
     continuation = [uci, ...(child.best?.pv ?? [])];
@@ -334,7 +338,7 @@ export async function analyzeGame(
       moves,
       index,
       engine,
-      { depth: reviewConfig.firstPassDepth, multiPv: reviewConfig.firstPassMultiPv },
+      { depth: reviewConfig.firstPassDepth, multiPv: reviewConfig.firstPassMultiPv, movetime: reviewConfig.firstPassMovetime },
       bookMarks,
       players,
       isCancelled,
@@ -353,7 +357,7 @@ export async function analyzeGame(
       moves,
       candidate.ply - 1,
       engine,
-      { depth: reviewConfig.secondPassDepth, multiPv: reviewConfig.multiPv },
+      { depth: reviewConfig.secondPassDepth, multiPv: reviewConfig.multiPv, movetime: reviewConfig.secondPassMovetime },
       bookMarks,
       players,
       isCancelled,
@@ -402,7 +406,7 @@ export async function analyzeOneMove(
     moves,
     index,
     engine,
-    { depth: reviewConfig.firstPassDepth, multiPv: reviewConfig.firstPassMultiPv },
+    { depth: reviewConfig.firstPassDepth, multiPv: reviewConfig.firstPassMultiPv, movetime: reviewConfig.firstPassMovetime },
     bookMarks,
     players,
     isCancelled,
@@ -414,7 +418,7 @@ export async function analyzeOneMove(
     moves,
     index,
     engine,
-    { depth: reviewConfig.secondPassDepth, multiPv: reviewConfig.multiPv },
+    { depth: reviewConfig.secondPassDepth, multiPv: reviewConfig.multiPv, movetime: reviewConfig.secondPassMovetime },
     bookMarks,
     players,
     isCancelled,

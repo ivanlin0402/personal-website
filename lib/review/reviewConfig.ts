@@ -48,10 +48,16 @@ export const reviewConfig = {
   openingEqualGap: 0.04,
 
   firstPassDepth: 14,
-  secondPassDepth: 18,
+  /** Browser cap. Stockfish stops at this time or at the depth, whichever is sooner. */
+  firstPassMovetime: 220,
+  secondPassDepth: 16,
+  secondPassMovetime: 400,
+  /** Eval after a played move that was not in the top lines. */
+  childDepth: 12,
+  childMovetime: 140,
   /** Pass 1 compares two lines so a full game stays responsive in the browser. */
   firstPassMultiPv: 2,
-  /** Deeper look at candidate brilliant, great, miss, and blunder positions. */
+  /** Deeper look at a move that might be brilliant, great, or a miss. */
   multiPv: 3,
 
   /** Half-moves stored on the best continuation. */
