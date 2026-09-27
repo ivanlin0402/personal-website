@@ -48,6 +48,7 @@ export class StockfishClient {
   private started = false;
   private ticket = 0;
   private epoch = 0;
+  private going = false;
   private multiPv: number = reviewConfig.firstPassMultiPv;
 
   private ensure(): Promise<void> {
@@ -107,8 +108,9 @@ export class StockfishClient {
   }
 
   private takeLine(line: string) {
+    if (line.startsWith("bestmove") && this.pending?.match(line)) this.going = false;
     if (!this.pending) {
-      if (line === "uciok" || line === "readyok" || line.startsWith("bestmove")) this.queue.push(line);
+      if (line === "uciok" || line === "readyok") this.queue.push(line);
       return;
     }
     this.remember(this.pending.lines, line);
@@ -161,21 +163,25 @@ export class StockfishClient {
     if (ticket !== this.ticket) throw new Error("cancelled");
     this.queue = [];
     const movetime = options?.movetime ? ` movetime ${options.movetime}` : "";
+    const finished = this.waitFor(epoch, (line) => line.startsWith("bestmove"));
+    this.going = true;
     this.send(`position fen ${fen}`);
     this.send(`go depth ${depth}${movetime}`);
-    const lines = await this.waitFor(epoch, (line) => line.startsWith("bestmove"));
+    const lines = await finished;
     if (ticket !== this.ticket) throw new Error("cancelled");
     return parseInfo(lines);
   }
 
   stop() {
     if (!this.started) return;
+    const wasGoing = this.going;
+    this.going = false;
     this.epoch += 1;
     const waiter = this.pending;
     this.pending = null;
     this.queue = [];
     waiter?.reject(new Error("cancelled"));
-    this.send("stop");
+    if (wasGoing) this.send("stop");
   }
 
   warm() {
@@ -185,6 +191,7 @@ export class StockfishClient {
   quit() {
     this.epoch += 1;
     this.started = false;
+    this.going = false;
     const waiter = this.pending;
     this.pending = null;
     waiter?.reject(new Error("cancelled"));

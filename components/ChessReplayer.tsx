@@ -414,6 +414,7 @@ export function ChessReplayer({
   }
 
   async function reviewJustPlayed(moves: Move[], index: number, ratings: ReviewPlayers) {
+    cancelRef.current = false;
     const id = ++runId.current;
     haltSearch();
     const kept = liveMovesRef.current.filter((move) => {
@@ -458,6 +459,7 @@ export function ChessReplayer({
       if (parsed.error) setLoadError(true);
       return;
     }
+    cancelRef.current = false;
     const sameGame =
       parsed.moves.length === game.moves.length &&
       parsed.moves.every((move, index) => move.san === game.moves[index]?.san);
