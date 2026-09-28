@@ -1,4 +1,4 @@
-# Refresh Chess.com ratings and games every day at 09:00 Asia/Taipei (UTC+8).
+# Refresh Chess.com ratings, new games, and their brilliant moves every day at 09:00 Asia/Taipei (UTC+8).
 # A push made with the default token does not start the deploy workflow, so this
 # job publishes the site itself when the data file changes.
 

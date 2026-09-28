@@ -51,6 +51,18 @@ function parseScore(line: string): SideScore | null {
   return null;
 }
 
+function fallbackSearch(fen: string, depth: number): EngineSearch {
+  let uci = "0000";
+  try {
+    const move = new Chess(fen).moves({ verbose: true })[0];
+    if (move) uci = move.from + move.to + (move.promotion ?? "");
+  } catch {
+    uci = "0000";
+  }
+  const line: EngineLine = { depth, multipv: 1, score: { type: "cp", cp: 0 }, move: uci, pv: [uci] };
+  return { best: line, second: null, third: null, lines: [line] };
+}
+
 function parseInfo(lines: string[]): EngineSearch {
   const byPv: Record<number, EngineLine> = {};
   for (const line of lines) {
@@ -94,49 +106,56 @@ class DesktopEngine {
     this.proc.stdin.write(`${command}\n`);
   }
 
-  private next(match: (line: string) => boolean): Promise<string[]> {
+  private next(match: (line: string) => boolean, ...commands: string[]): Promise<string[]> {
+    this.lines = [];
     return new Promise((resolve) => {
-      const collected = this.lines;
-      this.lines = [];
-      const finish = (line: string) => {
-        collected.push(line);
-        if (!match(line)) return;
+      const collected: string[] = [];
+      let settled = false;
+      let stopped = false;
+      const finish = (ok: boolean) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        clearTimeout(giveUp);
         this.waiter = null;
+        if (!ok) this.send("stop");
         resolve(collected);
       };
-      if (collected.some(match)) {
-        resolve(collected);
-        return;
-      }
-      this.waiter = finish;
+      const timer = setTimeout(() => {
+        if (settled || stopped) return;
+        stopped = true;
+        this.send("stop");
+      }, 120000);
+      const giveUp = setTimeout(() => finish(true), 128000);
+      this.waiter = (line: string) => {
+        collected.push(line);
+        if (match(line)) finish(true);
+      };
+      for (const command of commands) this.send(command);
     });
   }
 
   async init() {
-    this.send("uci");
-    await this.next((line) => line === "uciok");
+    await this.next((line) => line === "uciok", "uci");
     const threads = Number(process.env.STOCKFISH_THREADS ?? 2);
     this.send(`setoption name Threads value ${Number.isFinite(threads) && threads > 0 ? threads : 2}`);
     this.send("setoption name Hash value 128");
-    this.send("isready");
-    await this.next((line) => line === "readyok");
-    this.lines = [];
+    await this.next((line) => line === "readyok", "isready");
   }
 
   async search(fen: string, options?: SearchOptions): Promise<EngineSearch> {
     const multiPv = options?.multiPv ?? 2;
     const depth = options?.depth ?? 14;
+    await this.next((line) => line === "readyok", "isready");
     if (multiPv !== this.multiPv) {
       this.multiPv = multiPv;
       this.send(`setoption name MultiPV value ${multiPv}`);
-      this.send("isready");
-      await this.next((line) => line === "readyok");
+      await this.next((line) => line === "readyok", "isready");
     }
-    this.lines = [];
-    this.send(`position fen ${fen}`);
-    this.send(`go depth ${depth}`);
-    const lines = await this.next((line) => line.startsWith("bestmove"));
-    return parseInfo(lines);
+    const lines = await this.next((line) => line.startsWith("bestmove"), `position fen ${fen}`, `go depth ${depth}`);
+    const parsed = parseInfo(lines);
+    if (parsed.best) return parsed;
+    return fallbackSearch(fen, depth);
   }
 
   quit() {
