@@ -339,7 +339,7 @@ export const projects: ProjectWithI18n[] = [
     description:
       "Learning and documenting the 2026 Taipei Drone Education Center summer camp — flight, programming, and hands-on drone practice.",
     category: "Learning",
-    status: "Planning",
+    status: "In Progress",
     year: "2026",
     featured: true,
     cover: "/projects/taipei-drone-summer-camp-2026/9-19-day2/photo-3.jpg",
@@ -366,14 +366,25 @@ export const projects: ProjectWithI18n[] = [
     ],
     results: [
       "Project page created to track the camp",
-      "Waiting for / preparing for the 2026 summer sessions",
+      "Finished assembling the drone and made it flyable (10/3)",
     ],
     lessons: [
       "Hands-on camps work best when you pick one clear skill track",
       "Writing notes soon after each day helps more than waiting until the end",
     ],
-    media: "Photos from camp days — open a day tile to view the gallery.",
+    media: "Photos and videos from camp days — open a day tile to view the gallery.",
     mediaAlbums: [
+      {
+        slug: "10-3",
+        title: "10/3 assembled & flyable",
+        description:
+          "Finished assembling the drone and made it flyable.",
+        cover: "/projects/taipei-drone-summer-camp-2026/10-3/video-1.mp4",
+        images: [],
+        videos: [
+          "/projects/taipei-drone-summer-camp-2026/10-3/video-1.mp4",
+        ],
+      },
       {
         slug: "9-19-day2",
         title: "9/19 drone assembly (1)",
@@ -389,6 +400,13 @@ export const projects: ProjectWithI18n[] = [
       },
     ],
     updates: [
+      {
+        date: "2026-10-03",
+        title: "Finished assembling the drone — flyable",
+        description:
+          "Completed assembly and documented it with a Media tile for 10/3, including video.",
+        status: "completed",
+      },
       {
         date: "2026-09-19",
         title: "Added 9/19 drone assembly (1) photo album",
@@ -448,18 +466,24 @@ export const projects: ProjectWithI18n[] = [
         ],
         results: [
           "已建立專案頁面方便追蹤",
-          "等待／準備 2026 暑假梯次",
+          "完成無人機組裝並讓它可以飛行（10/3）",
         ],
         lessons: [
           "動手營隊最好先選定一條清楚的技能路線",
           "當天就寫筆記，比全部結束後再回想更有效",
         ],
-        media: "營隊每日照片——點開日別圖塊查看相簿。",
+        media: "營隊每日照片與影片——點開日別圖塊查看相簿。",
         albumDescriptions: {
+          "10-3": "完成無人機組裝並讓它可以飛行。",
           "9-19-day2":
             "無人機組裝照片：Drone 2.0／micro:bit 套件、遙控器與營隊現場。",
         },
         updates: [
+          {
+            title: "完成無人機組裝——可飛行",
+            description:
+              "完成組裝，並以 10/3 媒體圖塊記錄，含影片。",
+          },
           {
             title: "加入 9/19 drone assembly (1) 相簿",
             description:

@@ -10,6 +10,10 @@ type MediaAlbumGridProps = {
   albums: MediaAlbum[];
 };
 
+function isVideoPath(src: string) {
+  return /\.(mp4|webm|mov|ogg)(\?|$)/i.test(src);
+}
+
 export function MediaAlbumGrid({ projectSlug, albums }: MediaAlbumGridProps) {
   const { t } = useLanguage();
 
@@ -18,8 +22,12 @@ export function MediaAlbumGrid({ projectSlug, albums }: MediaAlbumGridProps) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       {albums.map((album) => {
-        const cover = album.cover ?? album.images[0];
+        const cover =
+          album.cover ?? album.images[0] ?? album.videos?.[0] ?? undefined;
+        const coverIsVideo = cover ? isVideoPath(cover) : false;
         const href = `/projects/${projectSlug}/media/${album.slug}`;
+        const videoOnly =
+          (album.videos?.length ?? 0) > 0 && album.images.length === 0;
 
         return (
           <Link
@@ -28,7 +36,15 @@ export function MediaAlbumGrid({ projectSlug, albums }: MediaAlbumGridProps) {
             className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-200 hover:-translate-y-0.5 hover:border-border-hover hover:bg-card-hover"
           >
             <div className="relative aspect-square overflow-hidden border-b border-border bg-black">
-              {cover ? (
+              {cover && coverIsVideo ? (
+                <video
+                  src={withBasePath(cover)}
+                  muted
+                  playsInline
+                  preload="metadata"
+                  className="absolute inset-0 h-full w-full object-contain object-center transition-transform duration-200 group-hover:scale-[1.02]"
+                />
+              ) : cover ? (
                 // eslint-disable-next-line @next/next/no-img-element -- need withBasePath for GitHub Pages static export
                 <img
                   src={withBasePath(cover)}
@@ -52,7 +68,7 @@ export function MediaAlbumGrid({ projectSlug, albums }: MediaAlbumGridProps) {
                 </p>
               ) : null}
               <span className="mt-3 text-[13px] font-medium text-dim transition-colors group-hover:text-accent">
-                {t.project.viewPhotos}
+                {videoOnly ? t.project.viewVideo : t.project.viewPhotos}
               </span>
             </div>
           </Link>

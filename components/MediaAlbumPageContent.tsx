@@ -13,6 +13,19 @@ type MediaAlbumPageContentProps = {
   album: MediaAlbum;
 };
 
+type MediaItem =
+  | { kind: "video"; src: string }
+  | { kind: "image"; src: string };
+
+function albumItems(album: MediaAlbum): MediaItem[] {
+  const videos = (album.videos ?? []).map((src) => ({
+    kind: "video" as const,
+    src,
+  }));
+  const images = album.images.map((src) => ({ kind: "image" as const, src }));
+  return [...videos, ...images];
+}
+
 export function MediaAlbumPageContent({
   project,
   album,
@@ -21,12 +34,12 @@ export function MediaAlbumPageContent({
   const localized = localizeProject(project as ProjectWithI18n, locale);
   const localizedAlbum =
     localized.mediaAlbums?.find((item) => item.slug === album.slug) ?? album;
+  const items = albumItems(localizedAlbum);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const total = localizedAlbum.images.length;
+  const total = items.length;
   const canGoPrev = activeIndex > 0;
   const canGoNext = activeIndex < total - 1;
-
   function handleScroll() {
     const el = scrollerRef.current;
     if (!el || el.clientWidth === 0) return;
@@ -71,21 +84,33 @@ export function MediaAlbumPageContent({
           onScroll={handleScroll}
           className="flex snap-x snap-mandatory overflow-x-auto scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
-          {localizedAlbum.images.map((src, index) => (
+          {items.map((item, index) => (
             <div
-              key={src}
-              className="relative aspect-square w-full shrink-0 snap-center snap-always bg-black"
+              key={`${item.kind}-${item.src}`}
+              className={`relative w-full shrink-0 snap-center snap-always bg-black ${
+                item.kind === "video" ? "aspect-video" : "aspect-square"
+              }`}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element -- need withBasePath for GitHub Pages static export */}
-              <img
-                src={withBasePath(src)}
-                alt={`${localizedAlbum.title} photo ${index + 1}`}
-                width={1600}
-                height={1600}
-                loading={index === 0 ? "eager" : "lazy"}
-                decoding="async"
-                className="absolute inset-0 h-full w-full object-contain object-center"
-              />
+              {item.kind === "video" ? (
+                <video
+                  src={withBasePath(item.src)}
+                  controls
+                  playsInline
+                  preload={index === 0 ? "metadata" : "none"}
+                  className="absolute inset-0 h-full w-full object-contain object-center"
+                />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element -- need withBasePath for GitHub Pages static export
+                <img
+                  src={withBasePath(item.src)}
+                  alt={`${localizedAlbum.title} photo ${index + 1}`}
+                  width={1600}
+                  height={1600}
+                  loading={index === 0 ? "eager" : "lazy"}
+                  decoding="async"
+                  className="absolute inset-0 h-full w-full object-contain object-center"
+                />
+              )}
             </div>
           ))}
         </div>
@@ -141,11 +166,11 @@ export function MediaAlbumPageContent({
             {activeIndex + 1} / {total}
           </p>
           <div className="flex items-center gap-1.5">
-            {localizedAlbum.images.map((src, index) => (
+            {items.map((item, index) => (
               <button
-                key={src}
+                key={`${item.kind}-${item.src}-dot`}
                 type="button"
-                aria-label={`Go to photo ${index + 1}`}
+                aria-label={`Go to item ${index + 1}`}
                 onClick={() => scrollToIndex(index)}
                 className={`h-1.5 rounded-full transition-all ${
                   index === activeIndex

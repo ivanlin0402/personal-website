@@ -27,15 +27,17 @@ export type GameItem = {
   githubUrl?: string;
 };
 
-/** Day / album tile that opens a gallery of project photos. */
+/** Day / album tile that opens a gallery of project photos and/or videos. */
 export type MediaAlbum = {
   slug: string;
   title: string;
   description?: string;
-  /** Cover image path under /public */
+  /** Cover image path under /public (falls back to first image, then first video) */
   cover?: string;
   /** Image paths under /public shown on the album page */
   images: string[];
+  /** Video paths under /public shown on the album page */
+  videos?: string[];
 };
 
 export type Project = {

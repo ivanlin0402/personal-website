@@ -55,6 +55,7 @@ export type Dictionary = {
     openGithub: string;
     playInBrowser: string;
     viewPhotos: string;
+    viewVideo: string;
     backToProject: string;
     previousPhoto: string;
     nextPhoto: string;
@@ -191,9 +192,10 @@ const en: Dictionary = {
     openGithub: "Open on GitHub →",
     playInBrowser: "Play in browser →",
     viewPhotos: "View photos →",
+    viewVideo: "View video →",
     backToProject: "← Back to project",
-    previousPhoto: "Previous photo",
-    nextPhoto: "Next photo",
+    previousPhoto: "Previous",
+    nextPhoto: "Next",
     board: "Board",
     pgnLabel: "PGN",
     loadPgn: "Load game",
@@ -361,9 +363,10 @@ const zh: Dictionary = {
     openGithub: "在 GitHub 開啟 →",
     playInBrowser: "在瀏覽器遊玩 →",
     viewPhotos: "查看照片 →",
+    viewVideo: "查看影片 →",
     backToProject: "← 回到專案",
-    previousPhoto: "上一張照片",
-    nextPhoto: "下一張照片",
+    previousPhoto: "上一個",
+    nextPhoto: "下一個",
     board: "棋盤",
     pgnLabel: "PGN",
     loadPgn: "載入棋局",
