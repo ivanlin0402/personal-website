@@ -379,7 +379,7 @@ export const projects: ProjectWithI18n[] = [
         title: "10/3 assembled & flyable",
         description:
           "Finished assembling the drone and made it flyable.",
-        cover: "/projects/taipei-drone-summer-camp-2026/10-3/video-1.mp4",
+        cover: "/projects/taipei-drone-summer-camp-2026/10-3/poster.jpg",
         images: [],
         videos: [
           "/projects/taipei-drone-summer-camp-2026/10-3/video-1.mp4",

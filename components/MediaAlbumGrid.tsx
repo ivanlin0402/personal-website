@@ -22,9 +22,10 @@ export function MediaAlbumGrid({ projectSlug, albums }: MediaAlbumGridProps) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       {albums.map((album) => {
-        const cover =
-          album.cover ?? album.images[0] ?? album.videos?.[0] ?? undefined;
-        const coverIsVideo = cover ? isVideoPath(cover) : false;
+        // Prefer a still cover — never load a video file into the project page grid.
+        const cover = [album.cover, album.images[0]]
+          .filter((src): src is string => Boolean(src))
+          .find((src) => !isVideoPath(src));
         const href = `/projects/${projectSlug}/media/${album.slug}`;
         const videoOnly =
           (album.videos?.length ?? 0) > 0 && album.images.length === 0;
@@ -36,26 +37,24 @@ export function MediaAlbumGrid({ projectSlug, albums }: MediaAlbumGridProps) {
             className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-200 hover:-translate-y-0.5 hover:border-border-hover hover:bg-card-hover"
           >
             <div className="relative aspect-square overflow-hidden border-b border-border bg-black">
-              {cover && coverIsVideo ? (
-                <video
-                  src={withBasePath(cover)}
-                  muted
-                  playsInline
-                  preload="metadata"
-                  className="absolute inset-0 h-full w-full object-contain object-center transition-transform duration-200 group-hover:scale-[1.02]"
-                />
-              ) : cover ? (
+              {cover ? (
                 // eslint-disable-next-line @next/next/no-img-element -- need withBasePath for GitHub Pages static export
                 <img
                   src={withBasePath(cover)}
                   alt={album.title}
-                  width={1200}
-                  height={1200}
+                  width={800}
+                  height={800}
                   loading="lazy"
                   decoding="async"
                   className="absolute inset-0 h-full w-full object-contain object-center transition-transform duration-200 group-hover:scale-[1.02]"
                 />
-              ) : null}
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center bg-background-secondary text-dim">
+                  <span className="text-sm font-medium">
+                    {videoOnly ? "Video" : "Media"}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="flex flex-1 flex-col p-4">

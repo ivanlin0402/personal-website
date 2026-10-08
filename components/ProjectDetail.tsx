@@ -1,7 +1,7 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import type { Project } from "@/lib/types";
-import { ChessLibrary } from "@/components/ChessLibrary";
 import { GameCatalogGrid } from "@/components/GameCatalogGrid";
 import { MediaAlbumGrid } from "@/components/MediaAlbumGrid";
 import { ProjectHeader } from "@/components/ProjectHeader";
@@ -16,6 +16,12 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { localizeProject } from "@/lib/i18n/project";
 import type { ProjectWithI18n } from "@/lib/i18n/project";
 import { withBasePath } from "@/lib/paths";
+
+const ChessLibrary = dynamic(
+  () =>
+    import("@/components/ChessLibrary").then((mod) => mod.ChessLibrary),
+  { ssr: false },
+);
 
 type ProjectDetailProps = {
   project: Project | ProjectWithI18n;

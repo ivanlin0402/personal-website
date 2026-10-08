@@ -49,8 +49,8 @@ export function ProjectCard({ project }: ProjectCardProps) {
           <img
             src={withBasePath(localized.cover)}
             alt=""
-            width={1280}
-            height={720}
+            width={800}
+            height={450}
             loading="lazy"
             decoding="async"
             className="absolute inset-0 h-full w-full object-contain object-center transition-transform duration-200 group-hover:scale-[1.02]"

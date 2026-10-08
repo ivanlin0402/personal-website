@@ -48,9 +48,10 @@ export default function HomePage() {
             <img
               src={withBasePath(hero.cover)}
               alt={hero.title}
-              width={1280}
-              height={720}
+              width={960}
+              height={540}
               decoding="async"
+              fetchPriority="high"
               className="aspect-video w-full object-cover object-center transition-transform duration-300 group-hover:scale-[1.02]"
             />
           </Link>

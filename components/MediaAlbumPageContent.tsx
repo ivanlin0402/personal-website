@@ -26,6 +26,10 @@ function albumItems(album: MediaAlbum): MediaItem[] {
   return [...videos, ...images];
 }
 
+function isVideoPath(src: string) {
+  return /\.(mp4|webm|mov|ogg)(\?|$)/i.test(src);
+}
+
 export function MediaAlbumPageContent({
   project,
   album,
@@ -40,6 +44,11 @@ export function MediaAlbumPageContent({
   const total = items.length;
   const canGoPrev = activeIndex > 0;
   const canGoNext = activeIndex < total - 1;
+  const poster =
+    [localizedAlbum.cover, localizedAlbum.images[0]]
+      .filter((src): src is string => Boolean(src))
+      .find((src) => !isVideoPath(src)) ?? undefined;
+
   function handleScroll() {
     const el = scrollerRef.current;
     if (!el || el.clientWidth === 0) return;
@@ -96,7 +105,8 @@ export function MediaAlbumPageContent({
                   src={withBasePath(item.src)}
                   controls
                   playsInline
-                  preload={index === 0 ? "metadata" : "none"}
+                  preload="none"
+                  poster={poster ? withBasePath(poster) : undefined}
                   className="absolute inset-0 h-full w-full object-contain object-center"
                 />
               ) : (
@@ -104,8 +114,8 @@ export function MediaAlbumPageContent({
                 <img
                   src={withBasePath(item.src)}
                   alt={`${localizedAlbum.title} photo ${index + 1}`}
-                  width={1600}
-                  height={1600}
+                  width={1280}
+                  height={1280}
                   loading={index === 0 ? "eager" : "lazy"}
                   decoding="async"
                   className="absolute inset-0 h-full w-full object-contain object-center"
